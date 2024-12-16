@@ -1,6 +1,6 @@
 import { 
   Users, Building, Bell, BarChart, Calendar, CreditCard, Settings, FileText, 
-  MessageSquare, Shield, Car, Tool, ClipboardList, UserCog, Receipt, Briefcase,
+  MessageSquare, Shield, Car, Wrench, ClipboardList, UserCog, Receipt, Briefcase,
   AlertTriangle, Key, Package, Thermometer, Droplets, Plug, Camera, HeartPulse
 } from "lucide-react";
 import DashboardCard from "./DashboardCard";
@@ -20,7 +20,7 @@ const DashboardGrid = () => {
       actions: { primary: "View Finances", secondary: "Payment Records" }
     },
     {
-      icon: Tool,
+      icon: Wrench,
       title: "Maintenance",
       stats: { value: 12, label: "Pending Requests" },
       actions: { primary: "View Requests", secondary: "Schedule Maintenance" }
