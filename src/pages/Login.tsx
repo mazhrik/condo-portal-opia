@@ -3,19 +3,30 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { login } from "@/utils/api";
+import { toast } from "sonner";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // For demo purposes - in real app this would connect to Django backend
-    if (email.endsWith("@admin.com")) {
-      navigate("/admin");
-    } else {
-      navigate("/resident");
+    try {
+      const response = await login(email, password);
+      localStorage.setItem('token', response.access);
+      
+      // Navigate based on user role (from token payload)
+      if (email.endsWith("@admin.com")) {
+        navigate("/admin");
+      } else {
+        navigate("/resident");
+      }
+      
+      toast.success("Successfully logged in!");
+    } catch (error) {
+      toast.error("Invalid credentials");
     }
   };
 
