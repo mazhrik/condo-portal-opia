@@ -1,5 +1,8 @@
 from rest_framework import serializers
-from .models import Resident, MaintenanceRequest, Payment, Amenity, AmenityBooking, Staff
+from .models import (
+    Resident, MaintenanceRequest, Payment, Amenity, 
+    AmenityBooking, Staff, WeatherStation, LocalBusiness
+)
 from django.contrib.auth.models import User
 
 class UserSerializer(serializers.ModelSerializer):
@@ -39,4 +42,14 @@ class StaffSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Staff
+        fields = '__all__'
+
+class WeatherStationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WeatherStation
+        fields = '__all__'
+
+class LocalBusinessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LocalBusiness
         fields = '__all__'
