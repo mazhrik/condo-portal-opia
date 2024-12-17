@@ -47,3 +47,33 @@ class Staff(models.Model):
     position = models.CharField(max_length=100)
     department = models.CharField(max_length=100)
     hire_date = models.DateField()
+
+class WeatherStation(models.Model):
+    location = models.CharField(max_length=100)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    last_updated = models.DateTimeField(auto_now=True)
+    temperature = models.DecimalField(max_digits=5, decimal_places=2)
+    humidity = models.DecimalField(max_digits=5, decimal_places=2)
+    air_quality_index = models.IntegerField()
+    wind_speed = models.DecimalField(max_digits=5, decimal_places=2)
+    
+class LocalBusiness(models.Model):
+    BUSINESS_TYPES = [
+        ('restaurant', 'Restaurant'),
+        ('cafe', 'Cafe'),
+        ('grocery', 'Grocery Store'),
+        ('pharmacy', 'Pharmacy'),
+        ('gym', 'Gym'),
+    ]
+    
+    name = models.CharField(max_length=200)
+    business_type = models.CharField(max_length=20, choices=BUSINESS_TYPES)
+    address = models.TextField()
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    rating = models.DecimalField(max_digits=3, decimal_places=1)
+    phone_number = models.CharField(max_length=20)
+    website = models.URLField(blank=True)
+    opening_hours = models.JSONField()
+    is_verified = models.BooleanField(default=False)

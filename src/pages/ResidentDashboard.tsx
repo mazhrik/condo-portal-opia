@@ -11,6 +11,7 @@ import {
   Users, 
   Phone
 } from "lucide-react";
+import LocalServices from "@/components/resident/LocalServices";
 
 const ResidentDashboard = () => {
   return (
@@ -156,6 +157,8 @@ const ResidentDashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        <LocalServices />
       </div>
     </div>
   );
