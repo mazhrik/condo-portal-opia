@@ -17,14 +17,15 @@ interface DashboardCardProps {
 
 const DashboardCard = ({ icon: Icon, title, stats, actions }: DashboardCardProps) => {
   return (
-    <Card className="backdrop-blur-sm bg-card/50 border-accent/10 hover:border-accent/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg">
-      <CardHeader className="flex flex-row items-center space-x-4">
-        <div className="p-2 rounded-full bg-primary/10">
+    <Card className="backdrop-blur-sm bg-card/80 border-primary/10 hover:border-primary/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg overflow-hidden group">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <CardHeader className="flex flex-row items-center space-x-4 relative">
+        <div className="p-2 rounded-full bg-primary/10 transition-colors duration-300 group-hover:bg-primary/20">
           <Icon className="w-6 h-6 text-primary animate-float" />
         </div>
-        <CardTitle className="text-xl">{title}</CardTitle>
+        <CardTitle className="text-xl font-light">{title}</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="relative">
         <div className="space-y-4">
           {stats && (
             <div className="animate-fade-in">
@@ -35,7 +36,7 @@ const DashboardCard = ({ icon: Icon, title, stats, actions }: DashboardCardProps
           <div className="space-y-2">
             {actions.primary && (
               <Button 
-                className="w-full bg-primary/80 hover:bg-primary transition-colors duration-300"
+                className="w-full bg-primary/90 hover:bg-primary transition-colors duration-300"
               >
                 {actions.primary}
               </Button>
