@@ -12,7 +12,7 @@ const ResidentDashboard = () => {
       {/* Background Image */}
       <div className="fixed inset-0 -z-10">
         <div 
-          className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab')] 
+          className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750')] 
           bg-cover bg-center bg-fixed opacity-[0.03]"
         ></div>
         <div className="absolute inset-0 bg-gradient-to-br from-background to-background/50"></div>

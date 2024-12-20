@@ -34,7 +34,7 @@ const Login = () => {
       {/* Background Image with enhanced visibility */}
       <div className="absolute inset-0 z-0">
         <div 
-          className="absolute inset-0 bg-[url('/lovable-uploads/94517384-d655-4468-b856-8f16e1c49073.png')] 
+          className="absolute inset-0 bg-[url('/lovable-uploads/7e125710-72fe-42b2-ba82-b6df6be9e570.png')] 
           bg-cover bg-center bg-fixed opacity-40"
         ></div>
         <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-accent/30"></div>
