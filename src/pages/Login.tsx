@@ -30,20 +30,22 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary relative overflow-hidden">
-      {/* Background decorative elements */}
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+      {/* Background Image with enhanced visibility */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1973&q=80')] bg-cover bg-center opacity-5"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-white/90 to-transparent backdrop-blur-sm"></div>
+        <div 
+          className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1973&q=80')] 
+          bg-cover bg-center bg-fixed opacity-40"
+        ></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-accent/30"></div>
       </div>
 
-      {/* Animated shapes */}
-      <div className="absolute top-20 left-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-pulse-slow"></div>
-      <div className="absolute bottom-20 right-20 w-64 h-64 bg-accent/5 rounded-full blur-3xl animate-pulse-slow"></div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-br from-primary/5 to-accent/5 rotate-45 animate-pulse-slow"></div>
+      {/* Animated shapes with reduced opacity */}
+      <div className="absolute top-20 left-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-pulse-slow"></div>
+      <div className="absolute bottom-20 right-20 w-64 h-64 bg-accent/10 rounded-full blur-3xl animate-pulse-slow"></div>
 
-      {/* Login card */}
-      <Card className="w-[420px] z-10 bg-white/80 backdrop-blur-lg border-white/20 shadow-2xl animate-slide-up">
+      {/* Semi-transparent login card */}
+      <Card className="w-[420px] z-10 bg-white/70 backdrop-blur-md border-white/20 shadow-2xl animate-slide-up">
         <CardHeader className="space-y-6 pb-8">
           <div className="w-24 h-24 mx-auto mb-4 relative">
             <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent opacity-20 rounded-2xl animate-pulse-slow"></div>
