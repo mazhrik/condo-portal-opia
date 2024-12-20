@@ -30,28 +30,32 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#e6e9f0] to-[#eef1f5] relative overflow-hidden">
-      {/* Background decorative elements */}
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+      {/* Background Image with enhanced visibility */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-white/80 to-transparent backdrop-blur-sm"></div>
+        <div 
+          className="absolute inset-0 bg-[url('/lovable-uploads/7e125710-72fe-42b2-ba82-b6df6be9e570.png')] 
+          bg-cover bg-center bg-fixed opacity-40"
+        ></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-accent/30"></div>
       </div>
 
-      {/* Floating shapes */}
-      <div className="absolute top-20 left-20 w-32 h-32 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute bottom-20 right-20 w-32 h-32 bg-accent/20 rounded-full blur-3xl animate-pulse"></div>
+      {/* Animated shapes with reduced opacity */}
+      <div className="absolute top-20 left-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-pulse-slow"></div>
+      <div className="absolute bottom-20 right-20 w-64 h-64 bg-accent/10 rounded-full blur-3xl animate-pulse-slow"></div>
 
-      {/* Login card */}
-      <Card className="w-[400px] z-10 bg-white/80 backdrop-blur-lg border-white/20 shadow-xl animate-fade-in">
-        <CardHeader className="space-y-4">
-          <div className="w-20 h-20 mx-auto mb-4">
+      {/* Semi-transparent login card */}
+      <Card className="w-[420px] z-10 bg-white/70 backdrop-blur-md border-white/20 shadow-2xl animate-slide-up">
+        <CardHeader className="space-y-6 pb-8">
+          <div className="w-24 h-24 mx-auto mb-4 relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent opacity-20 rounded-2xl animate-pulse-slow"></div>
             <img
-              src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&q=80"
+              src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1973&q=80"
               alt="CondoConnect Logo"
-              className="w-full h-full object-cover rounded-2xl shadow-lg animate-float"
+              className="w-full h-full object-cover rounded-2xl shadow-lg animate-float relative z-10"
             />
           </div>
-          <CardTitle className="text-3xl font-bold text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <CardTitle className="text-4xl font-bold text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             CondoConnect
           </CardTitle>
           <p className="text-center text-muted-foreground">
@@ -59,9 +63,9 @@ const Login = () => {
           </p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
+              <label htmlFor="email" className="text-sm font-medium text-primary">
                 Email
               </label>
               <Input
@@ -71,11 +75,11 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-white/50 border-white/30 focus:border-primary/50 transition-all duration-300"
+                className="bg-white/50 border-primary/10 focus:border-primary/30 transition-all duration-300"
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
+              <label htmlFor="password" className="text-sm font-medium text-primary">
                 Password
               </label>
               <Input
@@ -85,12 +89,12 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="bg-white/50 border-white/30 focus:border-primary/50 transition-all duration-300"
+                className="bg-white/50 border-primary/10 focus:border-primary/30 transition-all duration-300"
               />
             </div>
             <Button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all duration-300 transform hover:scale-[1.02]"
+              className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all duration-300 transform hover:scale-[1.02] text-white font-medium"
             >
               Login
             </Button>

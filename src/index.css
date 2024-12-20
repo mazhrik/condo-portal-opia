@@ -4,83 +4,65 @@
 
 @layer base {
   :root {
-    --background: 180 20% 99%;
-    --foreground: 180 5% 15%;
+    --background: 220 33% 98%;
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 180 5% 15%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 180 5% 15%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 174 42% 65%;
-    --primary-foreground: 180 5% 15%;
+    --primary: 222 47% 31%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 180 20% 96%;
-    --secondary-foreground: 180 5% 15%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 180 20% 96%;
-    --muted-foreground: 180 5% 45%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 174 42% 65%;
-    --accent-foreground: 180 5% 15%;
+    --accent: 191 91% 37%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 180 16% 93%;
-    --input: 180 16% 93%;
-    --ring: 174 42% 65%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 222 47% 31%;
 
     --radius: 0.5rem;
-
-    --sidebar-background: 180 20% 99%;
-    --sidebar-foreground: 180 5% 15%;
-    --sidebar-primary: 174 42% 65%;
-    --sidebar-primary-foreground: 180 5% 15%;
-    --sidebar-accent: 174 42% 65%;
-    --sidebar-accent-foreground: 180 5% 15%;
-    --sidebar-border: 180 16% 93%;
-    --sidebar-ring: 174 42% 65%;
   }
 
   .dark {
-    --background: 180 15% 10%;
-    --foreground: 180 5% 95%;
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
 
-    --card: 180 15% 12%;
-    --card-foreground: 180 5% 95%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 180 15% 12%;
-    --popover-foreground: 180 5% 95%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 174 42% 65%;
-    --primary-foreground: 180 15% 10%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222 47% 11%;
 
-    --secondary: 180 15% 15%;
-    --secondary-foreground: 180 5% 95%;
+    --secondary: 217 32% 17%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 180 15% 15%;
-    --muted-foreground: 180 10% 65%;
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 174 42% 65%;
-    --accent-foreground: 180 15% 10%;
+    --accent: 191 91% 37%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 63% 31%;
-    --destructive-foreground: 180 5% 95%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 180 15% 15%;
-    --input: 180 15% 15%;
-    --ring: 174 42% 65%;
-
-    --sidebar-background: 180 15% 10%;
-    --sidebar-foreground: 180 5% 95%;
-    --sidebar-primary: 174 42% 65%;
-    --sidebar-primary-foreground: 180 15% 10%;
-    --sidebar-accent: 174 42% 65%;
-    --sidebar-accent-foreground: 180 15% 10%;
-    --sidebar-border: 180 15% 15%;
-    --sidebar-ring: 174 42% 65%;
+    --border: 217 32% 17%;
+    --input: 217 32% 17%;
+    --ring: 212.7 26.8% 83.9;
   }
 }
 
@@ -88,7 +70,6 @@
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
   }
@@ -96,41 +77,49 @@
 
 /* Animations */
 @keyframes float {
-  0% {
-    transform: translateY(0px);
+  0%, 100% {
+    transform: translateY(0) rotate(0);
+  }
+  25% {
+    transform: translateY(-10px) rotate(-2deg);
+  }
+  75% {
+    transform: translateY(10px) rotate(2deg);
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.4;
   }
   50% {
-    transform: translateY(-10px);
-  }
-  100% {
-    transform: translateY(0px);
+    opacity: 0.8;
   }
 }
 
-@keyframes glow {
-  0% {
-    box-shadow: 0 0 5px rgba(138, 92, 246, 0.2);
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  50% {
-    box-shadow: 0 0 20px rgba(138, 92, 246, 0.4);
-  }
-  100% {
-    box-shadow: 0 0 5px rgba(138, 92, 246, 0.2);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Apply animations to cards */
-.card {
-  @apply transition-all duration-300 hover:scale-[1.02];
-  animation: glow 3s infinite;
-}
-
-/* Floating animation for icons */
 .animate-float {
-  animation: float 3s ease-in-out infinite;
+  animation: float 6s ease-in-out infinite;
 }
 
-/* Gradient backgrounds */
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.6s ease-out forwards;
+}
+
 .gradient-bg {
   background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
 }
