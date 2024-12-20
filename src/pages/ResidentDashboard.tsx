@@ -1,22 +1,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  Bell, 
-  Calendar, 
-  FileText, 
-  Building, 
-  CreditCard, 
-  MessageSquare, 
-  Car, 
-  Users, 
-  Phone
+  Bell, Calendar, FileText, Building, CreditCard, MessageSquare, 
+  Car, Users, Phone
 } from "lucide-react";
 import LocalServices from "@/components/resident/LocalServices";
 
 const ResidentDashboard = () => {
   return (
-    <div className="min-h-screen bg-primary-100 p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-primary-100 p-8 relative">
+      {/* Background Image */}
+      <div className="fixed inset-0 -z-10">
+        <div 
+          className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab')] 
+          bg-cover bg-center bg-fixed opacity-[0.03]"
+        ></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-background to-background/50"></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto space-y-8 relative z-10">
         <header className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-primary">Welcome, John Doe</h1>
