@@ -16,8 +16,8 @@ const ResidentDashboard = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-primary-100">
         <div 
-          className={`fixed md:static top-0 left-0 h-full transition-transform duration-300 ease-in-out transform 
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 z-50`}
+          className={`fixed md:static top-0 left-0 h-full bg-background border-r transition-transform duration-300 ease-in-out transform 
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 z-50 shadow-lg`}
         >
           <ResidentSidebar />
         </div>
