@@ -4,16 +4,30 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   Bell, Calendar, FileText, Building, CreditCard, MessageSquare, 
-  Car, Users, Phone
+  Car, Users, Phone, Menu
 } from "lucide-react";
 import LocalServices from "@/components/resident/LocalServices";
+import { useState } from "react";
 
 const ResidentDashboard = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-primary-100">
-        <ResidentSidebar />
+        <div className={`${sidebarOpen ? 'block' : 'hidden'} md:block`}>
+          <ResidentSidebar />
+        </div>
         <div className="flex-1 p-8 relative">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="fixed top-4 left-4 z-50 md:hidden"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
+
           {/* Background Image */}
           <div className="fixed inset-0 -z-10">
             <div 

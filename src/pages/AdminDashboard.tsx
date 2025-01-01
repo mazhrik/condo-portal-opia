@@ -2,13 +2,28 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import Header from "@/components/admin/Header";
 import DashboardGrid from "@/components/admin/DashboardGrid";
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 const AdminDashboard = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gradient-to-br from-background to-background/50">
-        <AdminSidebar />
+        <div className={`${sidebarOpen ? 'block' : 'hidden'} md:block`}>
+          <AdminSidebar />
+        </div>
         <div className="flex-1 p-8">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="fixed top-4 left-4 z-50 md:hidden"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
           <div className="fixed inset-0 -z-10">
             <img
               src="https://images.unsplash.com/photo-1554995207-c18c203602cb"
