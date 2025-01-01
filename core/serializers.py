@@ -1,9 +1,10 @@
 from rest_framework import serializers
-from .models import (
-    Resident, MaintenanceRequest, Payment, Amenity, 
-    AmenityBooking, Staff, WeatherStation, LocalBusiness
-)
 from django.contrib.auth.models import User
+from .models import (
+    Resident, MaintenanceRequest, Payment, Amenity, AmenityBooking,
+    ParkingSpot, VisitorParking, Document, ForumPost, ForumComment,
+    EmergencyContact, Staff, Announcement
+)
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,6 +16,11 @@ class ResidentSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Resident
+        fields = '__all__'
+
+class AnnouncementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Announcement
         fields = '__all__'
 
 class MaintenanceRequestSerializer(serializers.ModelSerializer):
@@ -37,19 +43,39 @@ class AmenityBookingSerializer(serializers.ModelSerializer):
         model = AmenityBooking
         fields = '__all__'
 
+class ParkingSpotSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ParkingSpot
+        fields = '__all__'
+
+class VisitorParkingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VisitorParking
+        fields = '__all__'
+
+class DocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Document
+        fields = '__all__'
+
+class ForumPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ForumPost
+        fields = '__all__'
+
+class ForumCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ForumComment
+        fields = '__all__'
+
+class EmergencyContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmergencyContact
+        fields = '__all__'
+
 class StaffSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     
     class Meta:
         model = Staff
-        fields = '__all__'
-
-class WeatherStationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = WeatherStation
-        fields = '__all__'
-
-class LocalBusinessSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = LocalBusiness
         fields = '__all__'
