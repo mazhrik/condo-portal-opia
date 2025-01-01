@@ -12,18 +12,30 @@ const AdminDashboard = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gradient-to-br from-background to-background/50">
-        <div className={`${sidebarOpen ? 'block' : 'hidden'} md:block`}>
+        <div 
+          className={`fixed md:static top-0 left-0 h-full transition-transform duration-300 ease-in-out transform 
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 z-50`}
+        >
           <AdminSidebar />
         </div>
         <div className="flex-1 p-8">
           <Button 
             variant="ghost" 
             size="icon" 
-            className="fixed top-4 left-4 z-50 md:hidden"
+            className="fixed top-4 left-4 z-50 md:hidden hover:bg-gray-100"
             onClick={() => setSidebarOpen(!sidebarOpen)}
           >
             <Menu className="h-6 w-6" />
           </Button>
+          
+          {/* Overlay for mobile */}
+          {sidebarOpen && (
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
+
           <div className="fixed inset-0 -z-10">
             <img
               src="https://images.unsplash.com/photo-1554995207-c18c203602cb"
