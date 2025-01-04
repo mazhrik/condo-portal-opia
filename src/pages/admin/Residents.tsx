@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/admin/Header";
 import { useQuery } from "@tanstack/react-query";
-import { getResidents } from "@/utils/api";
+import { getResidents, createResident } from "@/utils/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,11 +14,32 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Search } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 const Residents = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newResident, setNewResident] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    unitNumber: "",
+    moveInDate: ""
+  });
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const { data: residents, isLoading } = useQuery({
+  const { data: residents, isLoading, refetch } = useQuery({
     queryKey: ['residents'],
     queryFn: getResidents
   });
@@ -27,6 +49,36 @@ const Residents = () => {
     resident.user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     resident.unit_number.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleAddResident = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await createResident({
+        user: {
+          first_name: newResident.firstName,
+          last_name: newResident.lastName,
+          email: newResident.email,
+        },
+        phone_number: newResident.phoneNumber,
+        unit_number: newResident.unitNumber,
+        move_in_date: newResident.moveInDate
+      });
+      
+      toast({
+        title: "Success",
+        description: "Resident added successfully",
+      });
+      
+      setIsDialogOpen(false);
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add resident",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-background/50 p-8">
@@ -54,7 +106,88 @@ const Residents = () => {
                     className="pl-10 w-[300px]"
                   />
                 </div>
-                <Button>Add Resident</Button>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>Add Resident</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add New Resident</DialogTitle>
+                      <DialogDescription>
+                        Enter the details of the new resident below.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleAddResident} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="firstName">First Name</Label>
+                          <Input
+                            id="firstName"
+                            value={newResident.firstName}
+                            onChange={(e) => setNewResident({...newResident, firstName: e.target.value})}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="lastName">Last Name</Label>
+                          <Input
+                            id="lastName"
+                            value={newResident.lastName}
+                            onChange={(e) => setNewResident({...newResident, lastName: e.target.value})}
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={newResident.email}
+                          onChange={(e) => setNewResident({...newResident, email: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phoneNumber">Phone Number</Label>
+                        <Input
+                          id="phoneNumber"
+                          value={newResident.phoneNumber}
+                          onChange={(e) => setNewResident({...newResident, phoneNumber: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="unitNumber">Unit Number</Label>
+                        <Input
+                          id="unitNumber"
+                          value={newResident.unitNumber}
+                          onChange={(e) => setNewResident({...newResident, unitNumber: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="moveInDate">Move-in Date</Label>
+                        <Input
+                          id="moveInDate"
+                          type="date"
+                          value={newResident.moveInDate}
+                          onChange={(e) => setNewResident({...newResident, moveInDate: e.target.value})}
+                          required
+                        />
+                      </div>
+                      <div className="flex justify-end gap-4">
+                        <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit">Add Resident</Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+                <Button variant="outline" onClick={() => navigate('/admin/residents/directory')}>
+                  View Directory
+                </Button>
               </div>
             </div>
             <div className="rounded-lg border">

@@ -11,6 +11,17 @@ import Settings from "./pages/admin/Settings";
 import Documents from "./pages/admin/Documents";
 import Announcements from "./pages/admin/Announcements";
 import Residents from "./pages/admin/Residents";
+import ResidentDirectory from "./pages/admin/ResidentDirectory";
+import MaintenanceRequests from "./pages/admin/MaintenanceRequests";
+import MaintenanceSchedule from "./pages/admin/MaintenanceSchedule";
+import AmenityManagement from "./pages/admin/AmenityManagement";
+import AmenityStatus from "./pages/admin/AmenityStatus";
+import FinancialManagement from "./pages/admin/FinancialManagement";
+import PaymentRecords from "./pages/admin/PaymentRecords";
+import ParkingManagement from "./pages/admin/ParkingManagement";
+import VehicleRegistry from "./pages/admin/VehicleRegistry";
+import FileManager from "./pages/admin/FileManager";
+import UserPermissions from "./pages/admin/UserPermissions";
 
 // Import resident pages
 import ResidentAnnouncements from "./pages/resident/Announcements";
@@ -43,10 +54,20 @@ const App = () => (
           <Route path="/resident/messages" element={<ResidentMessages />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/residents" element={<Residents />} />
+          <Route path="/admin/residents/directory" element={<ResidentDirectory />} />
+          <Route path="/admin/maintenance" element={<MaintenanceRequests />} />
+          <Route path="/admin/maintenance/schedule" element={<MaintenanceSchedule />} />
+          <Route path="/admin/amenities" element={<AmenityManagement />} />
+          <Route path="/admin/amenities/status" element={<AmenityStatus />} />
+          <Route path="/admin/finances" element={<FinancialManagement />} />
+          <Route path="/admin/finances/records" element={<PaymentRecords />} />
+          <Route path="/admin/parking" element={<ParkingManagement />} />
+          <Route path="/admin/parking/registry" element={<VehicleRegistry />} />
+          <Route path="/admin/documents" element={<Documents />} />
+          <Route path="/admin/documents/manager" element={<FileManager />} />
           <Route path="/admin/communication" element={<CommunicationHub />} />
           <Route path="/admin/settings" element={<Settings />} />
-          <Route path="/admin/documents" element={<Documents />} />
-          <Route path="/admin/announcements" element={<Announcements />} />
+          <Route path="/admin/settings/permissions" element={<UserPermissions />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
