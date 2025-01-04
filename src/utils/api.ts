@@ -57,8 +57,24 @@ export const getAmenities = async () => {
   return response.data;
 };
 
+export const getAmenityDetails = async (id: number) => {
+  const response = await api.get(`/amenities/${id}/`);
+  return response.data;
+};
+
+// Amenity booking endpoints
+export const getAmenityBookings = async () => {
+  const response = await api.get('/amenity-bookings/');
+  return response.data;
+};
+
+export const createAmenityBooking = async (data: any) => {
+  const response = await api.post('/amenity-bookings/', data);
+  return response.data;
+};
+
 export const updateAmenityBooking = async (id: number, data: any) => {
-  const response = await api.put(`/amenities/${id}/`, data);
+  const response = await api.put(`/amenity-bookings/${id}/`, data);
   return response.data;
 };
 
@@ -83,22 +99,6 @@ export const updateResident = async (id: number, data: any) => {
   return response.data;
 };
 
-// Maintenance request endpoints
-export const getMaintenanceRequests = async () => {
-  const response = await api.get('/maintenance-requests/');
-  return response.data;
-};
-
-export const createMaintenanceRequest = async (data: any) => {
-  const response = await api.post('/maintenance-requests/', data);
-  return response.data;
-};
-
-export const updateMaintenanceRequest = async (id: number, data: any) => {
-  const response = await api.put(`/maintenance-requests/${id}/`, data);
-  return response.data;
-};
-
 // Payment endpoints
 export const getPayments = async () => {
   const response = await api.get('/payments/');
@@ -107,33 +107,6 @@ export const getPayments = async () => {
 
 export const createPayment = async (data: any) => {
   const response = await api.post('/payments/', data);
-  return response.data;
-};
-
-// Amenity endpoints
-export const getAmenities = async () => {
-  const response = await api.get('/amenities/');
-  return response.data;
-};
-
-export const getAmenityDetails = async (id: number) => {
-  const response = await api.get(`/amenities/${id}/`);
-  return response.data;
-};
-
-// Amenity booking endpoints
-export const getAmenityBookings = async () => {
-  const response = await api.get('/amenity-bookings/');
-  return response.data;
-};
-
-export const createAmenityBooking = async (data: any) => {
-  const response = await api.post('/amenity-bookings/', data);
-  return response.data;
-};
-
-export const updateAmenityBooking = async (id: number, data: any) => {
-  const response = await api.put(`/amenity-bookings/${id}/`, data);
   return response.data;
 };
 
