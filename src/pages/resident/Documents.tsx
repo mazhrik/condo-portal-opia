@@ -1,8 +1,15 @@
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
+import { getDocuments } from "@/utils/api";
 
 const Documents = () => {
+  const { data: documents, isLoading } = useQuery({
+    queryKey: ['documents'],
+    queryFn: getDocuments,
+  });
+
   return (
     <div className="p-8">
       <header className="mb-8">
@@ -17,9 +24,22 @@ const Documents = () => {
             <CardTitle>Available Documents</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button variant="outline" className="w-full">Building Rules</Button>
-            <Button variant="outline" className="w-full">Lease Agreement</Button>
-            <Button variant="outline" className="w-full">Community Guidelines</Button>
+            {isLoading ? (
+              <p>Loading documents...</p>
+            ) : documents?.length === 0 ? (
+              <p>No documents available.</p>
+            ) : (
+              documents?.map((doc) => (
+                <Button 
+                  key={doc.id}
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => window.open(doc.file, '_blank')}
+                >
+                  {doc.title}
+                </Button>
+              ))
+            )}
           </CardContent>
         </Card>
       </div>

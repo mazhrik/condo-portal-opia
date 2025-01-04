@@ -24,6 +24,12 @@ export const login = async (email: string, password: string) => {
   return response.data;
 };
 
+// Announcement endpoints
+export const getAnnouncements = async () => {
+  const response = await api.get('/announcements/');
+  return response.data;
+};
+
 // Resident endpoints
 export const getResidents = async () => {
   const response = await api.get('/residents/');
@@ -97,6 +103,28 @@ export const getStaffMembers = async () => {
 
 export const getStaffMember = async (id: number) => {
   const response = await api.get(`/staff/${id}/`);
+  return response.data;
+};
+
+// Document endpoints
+export const getDocuments = async () => {
+  const response = await api.get('/documents/');
+  return response.data;
+};
+
+// Parking endpoints
+export const getParkingSpots = async () => {
+  const response = await api.get('/parking-spots/');
+  return response.data;
+};
+
+export const getVisitorPasses = async () => {
+  const response = await api.get('/visitor-parking/');
+  return response.data;
+};
+
+export const requestVisitorPass = async (data: any) => {
+  const response = await api.post('/visitor-parking/', data);
   return response.data;
 };
 

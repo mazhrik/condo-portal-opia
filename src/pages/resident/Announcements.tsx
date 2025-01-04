@@ -1,7 +1,15 @@
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bell } from "lucide-react";
+import { getAnnouncements } from "@/utils/api";
+import { format } from "date-fns";
 
 const Announcements = () => {
+  const { data: announcements, isLoading } = useQuery({
+    queryKey: ['announcements'],
+    queryFn: getAnnouncements,
+  });
+
   return (
     <div className="p-8">
       <header className="mb-8">
@@ -16,16 +24,21 @@ const Announcements = () => {
             <CardTitle>Recent Announcements</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="border-l-4 border-primary p-3 bg-primary-100">
-              <p className="font-semibold">Building Maintenance</p>
-              <p className="text-sm text-gray-600">Scheduled for next week</p>
-              <p className="text-sm text-gray-500 mt-2">Posted: April 15, 2024</p>
-            </div>
-            <div className="border-l-4 border-primary p-3 bg-primary-100">
-              <p className="font-semibold">Community Meeting</p>
-              <p className="text-sm text-gray-600">This Saturday at 10 AM</p>
-              <p className="text-sm text-gray-500 mt-2">Posted: April 14, 2024</p>
-            </div>
+            {isLoading ? (
+              <p>Loading announcements...</p>
+            ) : announcements?.length === 0 ? (
+              <p>No announcements available.</p>
+            ) : (
+              announcements?.map((announcement) => (
+                <div key={announcement.id} className="border-l-4 border-primary p-3 bg-primary-100">
+                  <p className="font-semibold">{announcement.title}</p>
+                  <p className="text-sm text-gray-600">{announcement.content}</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Posted: {format(new Date(announcement.created_at), 'MMMM d, yyyy')}
+                  </p>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
       </div>
