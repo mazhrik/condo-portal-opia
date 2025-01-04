@@ -29,19 +29,29 @@ import {
 import { Search, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+interface MaintenanceRequest {
+  id: number;
+  title: string;
+  description: string;
+  status: string;
+  priority: 'high' | 'medium' | 'low';
+  created_at: string;
+}
+
 const MaintenanceRequests = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [selectedRequest, setSelectedRequest] = useState<MaintenanceRequest | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { data: requests, isLoading } = useQuery({
+  const { data: requests, isLoading } = useQuery<MaintenanceRequest[]>({
     queryKey: ['maintenance-requests'],
     queryFn: getMaintenanceRequests
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => updateMaintenanceRequest(id, data),
+    mutationFn: ({ id, data }: { id: number; data: { status: string } }) => 
+      updateMaintenanceRequest(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['maintenance-requests'] });
       toast({
@@ -64,7 +74,7 @@ const MaintenanceRequests = () => {
     request.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleStatusUpdate = (id, status) => {
+  const handleStatusUpdate = (id: number, status: string) => {
     updateMutation.mutate({ id, data: { status } });
   };
 
@@ -102,7 +112,6 @@ const MaintenanceRequests = () => {
                     <DialogHeader>
                       <DialogTitle>Create Maintenance Request</DialogTitle>
                     </DialogHeader>
-                    {/* Form implementation will be added in the next iteration */}
                     <div className="space-y-4 pt-4">
                       <p className="text-muted-foreground">Request form coming in the next update.</p>
                     </div>
