@@ -1,6 +1,59 @@
+import { useState } from "react";
 import Header from "@/components/admin/Header";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getAnnouncements, createAnnouncement } from "@/utils/api";
+import { format } from "date-fns";
 
 const Announcements = () => {
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch announcements
+  const { data: announcements, isLoading } = useQuery({
+    queryKey: ['announcements'],
+    queryFn: getAnnouncements
+  });
+
+  // Create announcement mutation
+  const createAnnouncementMutation = useMutation({
+    mutationFn: createAnnouncement,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['announcements'] });
+      toast({
+        title: "Success",
+        description: "Announcement created successfully",
+      });
+      setTitle("");
+      setContent("");
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to create announcement",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title || !content) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    createAnnouncementMutation.mutate({ title, content });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-background/50 p-8">
       <div className="fixed inset-0 -z-10">
@@ -20,16 +73,62 @@ const Announcements = () => {
               <div className="p-4 rounded-lg bg-card/80 border border-primary/10">
                 <h3 className="text-lg font-medium mb-4">Recent Announcements</h3>
                 <div className="space-y-4">
-                  {/* Placeholder for announcements list */}
-                  <p className="text-muted-foreground">No announcements yet</p>
+                  {isLoading ? (
+                    <p className="text-muted-foreground">Loading announcements...</p>
+                  ) : announcements?.length === 0 ? (
+                    <p className="text-muted-foreground">No announcements yet</p>
+                  ) : (
+                    announcements?.map((announcement: any) => (
+                      <div
+                        key={announcement.id}
+                        className="p-4 rounded-lg bg-background/50 border border-primary/10"
+                      >
+                        <h4 className="font-medium">{announcement.title}</h4>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {announcement.content}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Posted on {format(new Date(announcement.created_at), 'PPP')}
+                        </p>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
               <div className="p-4 rounded-lg bg-card/80 border border-primary/10">
                 <h3 className="text-lg font-medium mb-4">Create Announcement</h3>
-                <div className="space-y-4">
-                  {/* Placeholder for announcement form */}
-                  <p className="text-muted-foreground">Creation form coming soon</p>
-                </div>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label htmlFor="title" className="block text-sm font-medium mb-1">
+                      Title
+                    </label>
+                    <Input
+                      id="title"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Enter announcement title"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="content" className="block text-sm font-medium mb-1">
+                      Content
+                    </label>
+                    <Textarea
+                      id="content"
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      placeholder="Enter announcement content"
+                      rows={4}
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={createAnnouncementMutation.isPending}
+                  >
+                    {createAnnouncementMutation.isPending ? "Creating..." : "Create Announcement"}
+                  </Button>
+                </form>
               </div>
             </div>
           </div>
