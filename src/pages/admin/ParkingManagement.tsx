@@ -2,6 +2,7 @@ import Header from "@/components/admin/Header";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { getParkingSpots } from "@/utils/api";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -10,6 +11,7 @@ import {
 } from "@/components/ui/card";
 
 const ParkingManagement = () => {
+  const navigate = useNavigate();
   const { data: parkingSpots, isLoading } = useQuery({
     queryKey: ['parking-spots'],
     queryFn: getParkingSpots
@@ -32,8 +34,8 @@ const ParkingManagement = () => {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-light">Parking Management</h2>
               <div className="flex gap-4">
-                <Button variant="outline">View Map</Button>
-                <Button>Assign Spot</Button>
+                <Button variant="outline" onClick={() => navigate("/admin/parking/map")}>View Map</Button>
+                <Button onClick={() => navigate("/admin/parking/registry")}>Vehicle Registry</Button>
               </div>
             </div>
             <div className="grid md:grid-cols-3 gap-6">

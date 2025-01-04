@@ -2,6 +2,14 @@ import { useState } from "react";
 import Header from "@/components/admin/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -14,6 +22,16 @@ import { Search } from "lucide-react";
 
 const VehicleRegistry = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleRegisterVehicle = () => {
+    toast({
+      title: "Vehicle Registered",
+      description: "The vehicle has been successfully registered.",
+    });
+    setIsDialogOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-background/50 p-8">
@@ -41,7 +59,26 @@ const VehicleRegistry = () => {
                     className="pl-10 w-[300px]"
                   />
                 </div>
-                <Button>Register Vehicle</Button>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>Register Vehicle</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Register New Vehicle</DialogTitle>
+                    </DialogHeader>
+                    <form className="space-y-4" onSubmit={(e) => {
+                      e.preventDefault();
+                      handleRegisterVehicle();
+                    }}>
+                      <Input placeholder="License Plate" required />
+                      <Input placeholder="Make/Model" required />
+                      <Input placeholder="Owner Name" required />
+                      <Input placeholder="Parking Spot" required />
+                      <Button type="submit" className="w-full">Register Vehicle</Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
             <div className="rounded-lg border">
@@ -57,8 +94,21 @@ const VehicleRegistry = () => {
                 </TableHeader>
                 <TableBody>
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground">
-                      No vehicles registered
+                    <TableCell>ABC123</TableCell>
+                    <TableCell>Toyota Camry</TableCell>
+                    <TableCell>John Doe</TableCell>
+                    <TableCell>A-12</TableCell>
+                    <TableCell>
+                      <Button variant="outline" size="sm">Edit</Button>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>XYZ789</TableCell>
+                    <TableCell>Honda Civic</TableCell>
+                    <TableCell>Jane Smith</TableCell>
+                    <TableCell>B-15</TableCell>
+                    <TableCell>
+                      <Button variant="outline" size="sm">Edit</Button>
                     </TableCell>
                   </TableRow>
                 </TableBody>

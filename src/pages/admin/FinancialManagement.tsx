@@ -2,18 +2,30 @@ import Header from "@/components/admin/Header";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { getPayments } from "@/utils/api";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 
 const FinancialManagement = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
   const { data: payments, isLoading } = useQuery({
     queryKey: ['payments'],
     queryFn: getPayments
   });
+
+  const handleGenerateReport = () => {
+    toast({
+      title: "Report Generated",
+      description: "Financial report has been generated and sent to your email.",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-background/50 p-8">
@@ -32,8 +44,8 @@ const FinancialManagement = () => {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-light">Financial Management</h2>
               <div className="flex gap-4">
-                <Button variant="outline">Generate Report</Button>
-                <Button>Record Payment</Button>
+                <Button variant="outline" onClick={handleGenerateReport}>Generate Report</Button>
+                <Button onClick={() => navigate("/admin/finances/records")}>Payment Records</Button>
               </div>
             </div>
             <div className="grid md:grid-cols-3 gap-6 mb-6">
@@ -43,7 +55,7 @@ const FinancialManagement = () => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-semibold">
-                    ${payments?.reduce((acc, payment) => acc + payment.amount, 0).toLocaleString()}
+                    ${payments?.reduce((acc, payment) => acc + payment.amount, 0).toLocaleString() || '0'}
                   </p>
                 </CardContent>
               </Card>

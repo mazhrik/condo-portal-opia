@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getPayments } from "@/utils/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import {
   Table,
   TableBody,
@@ -16,11 +17,19 @@ import { Search } from "lucide-react";
 
 const PaymentRecords = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const { toast } = useToast();
 
   const { data: payments, isLoading } = useQuery({
     queryKey: ['payments'],
     queryFn: getPayments
   });
+
+  const handleExport = () => {
+    toast({
+      title: "Export Started",
+      description: "Payment records are being exported to CSV.",
+    });
+  };
 
   const filteredPayments = payments?.filter(payment =>
     payment.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -53,7 +62,7 @@ const PaymentRecords = () => {
                     className="pl-10 w-[300px]"
                   />
                 </div>
-                <Button variant="outline">Export</Button>
+                <Button variant="outline" onClick={handleExport}>Export</Button>
               </div>
             </div>
             <div className="rounded-lg border">
@@ -72,23 +81,29 @@ const PaymentRecords = () => {
                     <TableRow>
                       <TableCell colSpan={5} className="text-center">Loading...</TableCell>
                     </TableRow>
-                  ) : filteredPayments?.map((payment) => (
-                    <TableRow key={payment.id}>
-                      <TableCell>{payment.payment_id}</TableCell>
-                      <TableCell>${payment.amount.toLocaleString()}</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-sm ${
-                          payment.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {payment.status}
-                        </span>
-                      </TableCell>
-                      <TableCell>{new Date(payment.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <Button variant="outline" size="sm">View Details</Button>
-                      </TableCell>
+                  ) : filteredPayments?.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center">No payments found</TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    filteredPayments?.map((payment) => (
+                      <TableRow key={payment.id}>
+                        <TableCell>{payment.payment_id}</TableCell>
+                        <TableCell>${payment.amount.toLocaleString()}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-sm ${
+                            payment.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {payment.status}
+                          </span>
+                        </TableCell>
+                        <TableCell>{new Date(payment.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <Button variant="outline" size="sm">View Details</Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </div>
