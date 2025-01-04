@@ -1,31 +1,49 @@
 import { 
-  Users, Building, Bell, BarChart, Calendar, CreditCard, Settings, FileText, 
-  MessageSquare, Shield, Car, Wrench, ClipboardList, UserCog, Receipt, Briefcase,
-  AlertTriangle, Key, Package, Thermometer, Droplets, Plug, Camera, HeartPulse
+  Users, Bell, Wrench, Calendar, CreditCard, Car, FileText, 
+  MessageSquare, Settings
 } from "lucide-react";
 import DashboardCard from "./DashboardCard";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { getResidents, getMaintenanceRequests, getAmenityBookings, getPayments, getParkingSpots } from "@/utils/api";
 
 const DashboardGrid = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
 
-  const showComingSoon = (feature: string) => {
-    toast({
-      title: "Coming Soon",
-      description: `The ${feature} feature is coming soon!`,
-    });
-  };
+  // Fetch data for stats
+  const { data: residents } = useQuery({
+    queryKey: ['residents'],
+    queryFn: getResidents
+  });
+
+  const { data: maintenanceRequests } = useQuery({
+    queryKey: ['maintenance-requests'],
+    queryFn: getMaintenanceRequests
+  });
+
+  const { data: amenityBookings } = useQuery({
+    queryKey: ['amenity-bookings'],
+    queryFn: getAmenityBookings
+  });
+
+  const { data: payments } = useQuery({
+    queryKey: ['payments'],
+    queryFn: getPayments
+  });
+
+  const { data: parkingSpots } = useQuery({
+    queryKey: ['parking-spots'],
+    queryFn: getParkingSpots
+  });
 
   const cards = [
     {
       icon: Users,
       title: "Resident Management",
-      stats: { value: 150, label: "Total Residents" },
+      stats: { value: residents?.length || 0, label: "Total Residents" },
       actions: { 
-        primary: { label: "Manage Residents", onClick: () => showComingSoon("Resident Management") },
-        secondary: { label: "View Directory", onClick: () => showComingSoon("Resident Directory") }
+        primary: { label: "Manage Residents", route: "/admin/residents" },
+        secondary: { label: "View Directory", route: "/admin/residents/directory" }
       }
     },
     {
@@ -40,37 +58,43 @@ const DashboardGrid = () => {
     {
       icon: Wrench,
       title: "Maintenance",
-      stats: { value: 12, label: "Pending Requests" },
+      stats: { value: maintenanceRequests?.length || 0, label: "Pending Requests" },
       actions: { 
-        primary: { label: "View Requests", onClick: () => showComingSoon("Maintenance Requests") },
-        secondary: { label: "Schedule Maintenance", onClick: () => showComingSoon("Maintenance Scheduling") }
+        primary: { label: "View Requests", route: "/admin/maintenance" },
+        secondary: { label: "Schedule Maintenance", route: "/admin/maintenance/schedule" }
       }
     },
     {
       icon: Calendar,
       title: "Amenity Bookings",
-      stats: { value: 8, label: "Today's Bookings" },
+      stats: { value: amenityBookings?.length || 0, label: "Today's Bookings" },
       actions: { 
-        primary: { label: "Manage Bookings", onClick: () => showComingSoon("Amenity Bookings") },
-        secondary: { label: "Facility Status", onClick: () => showComingSoon("Facility Status") }
+        primary: { label: "Manage Bookings", route: "/admin/amenities" },
+        secondary: { label: "Facility Status", route: "/admin/amenities/status" }
       }
     },
     {
       icon: CreditCard,
       title: "Financial Management",
-      stats: { value: "$45,000", label: "Monthly Collections" },
+      stats: { 
+        value: `$${payments?.reduce((acc, payment) => acc + payment.amount, 0) || 0}`, 
+        label: "Monthly Collections" 
+      },
       actions: { 
-        primary: { label: "View Finances", onClick: () => showComingSoon("Financial Management") },
-        secondary: { label: "Payment Records", onClick: () => showComingSoon("Payment Records") }
+        primary: { label: "View Finances", route: "/admin/finances" },
+        secondary: { label: "Payment Records", route: "/admin/finances/records" }
       }
     },
     {
       icon: Car,
       title: "Parking Management",
-      stats: { value: "180/200", label: "Occupied Spots" },
+      stats: { 
+        value: `${parkingSpots?.filter(spot => spot.is_occupied).length || 0}/${parkingSpots?.length || 0}`, 
+        label: "Occupied Spots" 
+      },
       actions: { 
-        primary: { label: "Manage Parking", onClick: () => showComingSoon("Parking Management") },
-        secondary: { label: "Vehicle Registry", onClick: () => showComingSoon("Vehicle Registry") }
+        primary: { label: "Manage Parking", route: "/admin/parking" },
+        secondary: { label: "Vehicle Registry", route: "/admin/parking/registry" }
       }
     },
     {

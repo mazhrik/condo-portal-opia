@@ -30,6 +30,11 @@ export const getAnnouncements = async () => {
   return response.data;
 };
 
+export const createAnnouncement = async (data: any) => {
+  const response = await api.post('/announcements/', data);
+  return response.data;
+};
+
 // Resident endpoints
 export const getResidents = async () => {
   const response = await api.get('/residents/');
@@ -38,6 +43,16 @@ export const getResidents = async () => {
 
 export const getResidentProfile = async (id: number) => {
   const response = await api.get(`/residents/${id}/`);
+  return response.data;
+};
+
+export const createResident = async (data: any) => {
+  const response = await api.post('/residents/', data);
+  return response.data;
+};
+
+export const updateResident = async (id: number, data: any) => {
+  const response = await api.put(`/residents/${id}/`, data);
   return response.data;
 };
 
@@ -109,6 +124,15 @@ export const getStaffMember = async (id: number) => {
 // Document endpoints
 export const getDocuments = async () => {
   const response = await api.get('/documents/');
+  return response.data;
+};
+
+export const uploadDocument = async (data: FormData) => {
+  const response = await api.post('/documents/', data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
   return response.data;
 };
 

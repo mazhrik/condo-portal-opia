@@ -10,6 +10,7 @@ import CommunicationHub from "./pages/admin/CommunicationHub";
 import Settings from "./pages/admin/Settings";
 import Documents from "./pages/admin/Documents";
 import Announcements from "./pages/admin/Announcements";
+import Residents from "./pages/admin/Residents";
 
 // Import resident pages
 import ResidentAnnouncements from "./pages/resident/Announcements";
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/resident/community" element={<ResidentCommunity />} />
           <Route path="/resident/messages" element={<ResidentMessages />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/residents" element={<Residents />} />
           <Route path="/admin/communication" element={<CommunicationHub />} />
           <Route path="/admin/settings" element={<Settings />} />
           <Route path="/admin/documents" element={<Documents />} />
