@@ -28,12 +28,13 @@ import {
 } from "@/components/ui/select";
 import { Search, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface MaintenanceRequest {
   id: number;
   title: string;
   description: string;
-  status: string;
+  status: 'pending' | 'in_progress' | 'completed';
   priority: 'high' | 'medium' | 'low';
   created_at: string;
 }
@@ -43,6 +44,7 @@ const MaintenanceRequests = () => {
   const [selectedRequest, setSelectedRequest] = useState<MaintenanceRequest | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const { data: requests, isLoading } = useQuery<MaintenanceRequest[]>({
     queryKey: ['maintenance-requests'],
@@ -50,8 +52,8 @@ const MaintenanceRequests = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: { status: string } }) => 
-      updateMaintenanceRequest(id, data),
+    mutationFn: (params: { id: number; data: { status: string } }) => 
+      updateMaintenanceRequest(params.id, params.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['maintenance-requests'] });
       toast({
@@ -69,14 +71,18 @@ const MaintenanceRequests = () => {
     },
   });
 
+  const handleStatusUpdate = (id: number, status: string) => {
+    updateMutation.mutate({ id, data: { status } });
+  };
+
+  const handleScheduleMaintenance = () => {
+    navigate('/admin/maintenance/schedule');
+  };
+
   const filteredRequests = requests?.filter(request =>
     request.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     request.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const handleStatusUpdate = (id: number, status: string) => {
-    updateMutation.mutate({ id, data: { status } });
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-background/50 p-8">
@@ -104,19 +110,9 @@ const MaintenanceRequests = () => {
                     className="pl-10 w-[300px]"
                   />
                 </div>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button>New Request</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Create Maintenance Request</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 pt-4">
-                      <p className="text-muted-foreground">Request form coming in the next update.</p>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                <Button onClick={handleScheduleMaintenance}>
+                  Schedule Maintenance
+                </Button>
               </div>
             </div>
             <div className="rounded-lg border">
@@ -177,7 +173,9 @@ const MaintenanceRequests = () => {
                         <TableCell>{new Date(request.created_at).toLocaleDateString()}</TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Button variant="outline" size="sm">View Details</Button>
+                            <Button variant="outline" size="sm" onClick={() => setSelectedRequest(request)}>
+                              View Details
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>

@@ -1,6 +1,6 @@
 import Header from "@/components/admin/Header";
-import { useQuery } from "@tanstack/react-query";
-import { getAmenities } from "@/utils/api";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getAmenities, updateAmenityBooking } from "@/utils/api";
 import {
   Table,
   TableBody,
@@ -10,12 +10,54 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+
+interface Amenity {
+  id: number;
+  name: string;
+  status: 'available' | 'unavailable' | 'maintenance';
+  capacity: number;
+  updated_at: string;
+}
 
 const AmenityStatus = () => {
-  const { data: amenities, isLoading } = useQuery({
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: amenities, isLoading } = useQuery<Amenity[]>({
     queryKey: ['amenities'],
     queryFn: getAmenities
   });
+
+  const updateMutation = useMutation({
+    mutationFn: (params: { id: number; data: { status: string } }) => 
+      updateAmenityBooking(params.id, params.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['amenities'] });
+      toast({
+        title: "Status updated",
+        description: "The amenity status has been updated successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update the amenity status.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleStatusUpdate = (id: number, status: string) => {
+    updateMutation.mutate({ id, data: { status } });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-background/50 p-8">
@@ -52,11 +94,19 @@ const AmenityStatus = () => {
                     <TableRow key={amenity.id}>
                       <TableCell>{amenity.name}</TableCell>
                       <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-sm ${
-                          amenity.status === 'available' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {amenity.status}
-                        </span>
+                        <Select
+                          defaultValue={amenity.status}
+                          onValueChange={(value) => handleStatusUpdate(amenity.id, value)}
+                        >
+                          <SelectTrigger className="w-[140px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="available">Available</SelectItem>
+                            <SelectItem value="unavailable">Unavailable</SelectItem>
+                            <SelectItem value="maintenance">Maintenance</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                       <TableCell>{new Date(amenity.updated_at).toLocaleString()}</TableCell>
                       <TableCell>{amenity.capacity}</TableCell>

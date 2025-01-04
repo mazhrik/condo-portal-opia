@@ -35,6 +35,33 @@ export const createAnnouncement = async (data: any) => {
   return response.data;
 };
 
+// Maintenance request endpoints
+export const getMaintenanceRequests = async () => {
+  const response = await api.get('/maintenance-requests/');
+  return response.data;
+};
+
+export const createMaintenanceRequest = async (data: any) => {
+  const response = await api.post('/maintenance-requests/', data);
+  return response.data;
+};
+
+export const updateMaintenanceRequest = async (id: number, data: any) => {
+  const response = await api.put(`/maintenance-requests/${id}/`, data);
+  return response.data;
+};
+
+// Amenity endpoints
+export const getAmenities = async () => {
+  const response = await api.get('/amenities/');
+  return response.data;
+};
+
+export const updateAmenityBooking = async (id: number, data: any) => {
+  const response = await api.put(`/amenities/${id}/`, data);
+  return response.data;
+};
+
 // Resident endpoints
 export const getResidents = async () => {
   const response = await api.get('/residents/');
