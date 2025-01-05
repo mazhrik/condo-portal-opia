@@ -9,9 +9,62 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Search, Edit2, Trash2, UserPlus } from "lucide-react";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+
+const mockUsers = [
+  {
+    id: 1,
+    name: "John Doe",
+    email: "john@example.com",
+    role: "Admin",
+    permissions: ["all"],
+    lastUpdated: "2024-02-20",
+  },
+  {
+    id: 2,
+    name: "Jane Smith",
+    email: "jane@example.com",
+    role: "Manager",
+    permissions: ["view", "edit"],
+    lastUpdated: "2024-02-19",
+  },
+];
 
 const UserPermissions = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const { toast } = useToast();
+
+  const handleAddUser = () => {
+    toast({
+      title: "Add User",
+      description: "New user creation modal would open here",
+    });
+  };
+
+  const handleEditUser = (userId: number) => {
+    toast({
+      title: "Edit User",
+      description: `Editing user ${userId}`,
+    });
+  };
+
+  const handleDeleteUser = (userId: number) => {
+    toast({
+      title: "Delete User",
+      description: `User ${userId} would be deleted`,
+      variant: "destructive",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-background/50 p-8">
       <div className="fixed inset-0 -z-10">
@@ -34,9 +87,14 @@ const UserPermissions = () => {
                   <Input
                     placeholder="Search users..."
                     className="pl-10 w-[300px]"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
-                <Button>Add User</Button>
+                <Button onClick={handleAddUser}>
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Add User
+                </Button>
               </div>
             </div>
             <div className="rounded-lg border">
@@ -51,11 +109,48 @@ const UserPermissions = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground">
-                      No users found
-                    </TableCell>
-                  </TableRow>
+                  {mockUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{user.name}</p>
+                          <p className="text-sm text-muted-foreground">{user.email}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Select defaultValue={user.role}>
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Select role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Admin">Admin</SelectItem>
+                            <SelectItem value="Manager">Manager</SelectItem>
+                            <SelectItem value="Staff">Staff</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>{user.permissions.join(", ")}</TableCell>
+                      <TableCell>{user.lastUpdated}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleEditUser(user.id)}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => handleDeleteUser(user.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>
