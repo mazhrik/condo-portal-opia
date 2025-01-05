@@ -3,61 +3,75 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "@/utils/api";
+import { signInWithEmail, signInWithGoogle } from "@/utils/supabase";
 import { toast } from "sonner";
 import { FcGoogle } from "react-icons/fc";
+import backgroundImage from '../assets/sofa-background.jpg';
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
-      const response = await login(email, password);
-      localStorage.setItem('token', response.access);
-      
-      if (email.endsWith("@admin.com")) {
+      const { user } = await signInWithEmail(email, password);
+      if (user?.email?.endsWith("@admin.com")) {
         navigate("/admin");
       } else {
         navigate("/resident");
       }
-      
       toast.success("Successfully logged in!");
-    } catch (error) {
-      toast.error("Invalid credentials");
+    } catch (error: any) {
+      toast.error(error.message || "Invalid credentials");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
     try {
-      // This would be replaced with actual Google OAuth implementation
-      toast.info("Google Sign In will be implemented with backend integration");
-    } catch (error) {
-      toast.error("Google Sign In failed");
+      await signInWithGoogle();
+      // The redirect will happen automatically
+      toast.success("Redirecting to Google...");
+    } catch (error: any) {
+      toast.error("Failed to initialize Google Sign In");
     }
   };
 
-  const handleForgotPassword = () => {
-    // This would be connected to password reset flow
-    toast.info("Password reset link will be sent to your email");
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast.error("Please enter your email address first");
+      return;
+    }
+    try {
+      await resetPassword(email);
+      toast.success("Password reset link sent to your email");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send reset link");
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#1A1F2C] relative overflow-hidden">
-      {/* Background overlay with modern gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#243949] to-[#517fa4] opacity-50"></div>
-
-      {/* Animated shapes */}
-      <div className="absolute top-20 left-20 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
-      <div className="absolute bottom-20 right-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+    <div 
+      className="min-h-screen flex items-center justify-center relative overflow-hidden"
+      style={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
+    >
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
 
       {/* Login Card */}
       <Card className="w-[420px] z-10 bg-white/10 backdrop-blur-md border-white/20 shadow-2xl">
         <CardHeader className="space-y-1 pb-8">
           <CardTitle className="text-2xl font-bold text-center text-white">
-            Sign In
+            Welcome Back
           </CardTitle>
           <p className="text-center text-gray-300">
             Enter your credentials to access your account
@@ -101,8 +115,9 @@ const Login = () => {
             <Button 
               type="submit" 
               className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+              disabled={isLoading}
             >
-              Sign In
+              {isLoading ? "Signing in..." : "Sign In"}
             </Button>
 
             <div className="relative my-4">
@@ -110,7 +125,7 @@ const Login = () => {
                 <div className="w-full border-t border-gray-500/30"></div>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-[#1A1F2C] px-2 text-gray-400">Or continue with</span>
+                <span className="bg-transparent px-2 text-gray-400">Or continue with</span>
               </div>
             </div>
 
