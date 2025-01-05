@@ -6,11 +6,14 @@ import { useNavigate } from "react-router-dom";
 import { signInWithEmail, signInWithGoogle, resetPassword } from "@/utils/supabase";
 import { toast } from "sonner";
 import { FcGoogle } from "react-icons/fc";
+import { FaFacebook, FaApple } from "react-icons/fa";
+import { Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -34,7 +37,6 @@ const Login = () => {
   const handleGoogleLogin = async () => {
     try {
       await signInWithGoogle();
-      // The redirect will happen automatically
       toast.success("Redirecting to Google...");
     } catch (error: any) {
       toast.error("Failed to initialize Google Sign In");
@@ -55,26 +57,20 @@ const Login = () => {
   };
 
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center relative overflow-hidden"
-      style={{
-        background: 'linear-gradient(to right, #1a365d, #2d3748)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center'
-      }}
-    >
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
-
-      {/* Login Card */}
-      <Card className="w-[420px] z-10 bg-white/10 backdrop-blur-md border-white/20 shadow-2xl">
-        <CardHeader className="space-y-1 pb-8">
+    <div className="min-h-screen flex items-center justify-center bg-[#1a2942] relative overflow-hidden">
+      <div className="absolute inset-0">
+        <img 
+          src="/lovable-uploads/66879088-b665-4d16-8b71-dd39e82fd024.png" 
+          alt="Background" 
+          className="w-full h-full object-cover"
+        />
+      </div>
+      
+      <Card className="w-[420px] z-10 bg-[#1e2a47]/90 backdrop-blur-sm border-white/10 shadow-2xl">
+        <CardHeader className="space-y-1 pb-4">
           <CardTitle className="text-2xl font-bold text-center text-white">
-            Welcome Back
+            Sign In
           </CardTitle>
-          <p className="text-center text-gray-300">
-            Enter your credentials to access your account
-          </p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
@@ -82,26 +78,37 @@ const Login = () => {
               <Input
                 id="email"
                 type="email"
-                placeholder="Email address"
+                placeholder="Email Address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-white/20 border-white/10 text-white placeholder:text-gray-400"
+                className="bg-[#2a3854] border-0 text-white placeholder:text-gray-400 h-12"
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 relative">
               <Input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="bg-white/20 border-white/10 text-white placeholder:text-gray-400"
+                className="bg-[#2a3854] border-0 text-white placeholder:text-gray-400 h-12 pr-10"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-gray-400"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex justify-between items-center">
+              <label className="flex items-center space-x-2 text-sm text-gray-400">
+                <input type="checkbox" className="rounded border-gray-400" />
+                <span>Remember Me</span>
+              </label>
               <button
                 type="button"
                 onClick={handleForgotPassword}
@@ -113,7 +120,7 @@ const Login = () => {
 
             <Button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+              className="w-full bg-[#4169e1] hover:bg-[#3154b7] text-white h-12"
               disabled={isLoading}
             >
               {isLoading ? "Signing in..." : "Sign In"}
@@ -124,19 +131,34 @@ const Login = () => {
                 <div className="w-full border-t border-gray-500/30"></div>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-transparent px-2 text-gray-400">Or continue with</span>
+                <span className="bg-[#1e2a47] px-2 text-gray-400">Or continue with</span>
               </div>
             </div>
 
-            <Button 
-              type="button"
-              variant="outline" 
-              onClick={handleGoogleLogin}
-              className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 transition-colors"
-            >
-              <FcGoogle className="mr-2 h-4 w-4" />
-              Sign in with Google
-            </Button>
+            <div className="flex gap-4 justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleGoogleLogin}
+                className="bg-[#2a3854] border-0 hover:bg-[#344567] text-white w-12 h-12 p-0"
+              >
+                <FcGoogle className="h-5 w-5" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="bg-[#2a3854] border-0 hover:bg-[#344567] text-white w-12 h-12 p-0"
+              >
+                <FaFacebook className="h-5 w-5 text-blue-500" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="bg-[#2a3854] border-0 hover:bg-[#344567] text-white w-12 h-12 p-0"
+              >
+                <FaApple className="h-5 w-5" />
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
