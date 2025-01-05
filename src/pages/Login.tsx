@@ -3,10 +3,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { signInWithEmail, signInWithGoogle } from "@/utils/supabase";
+import { signInWithEmail, signInWithGoogle, resetPassword } from "@/utils/supabase";
 import { toast } from "sonner";
 import { FcGoogle } from "react-icons/fc";
-import backgroundImage from '../assets/sofa-background.jpg';
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -59,7 +58,7 @@ const Login = () => {
     <div 
       className="min-h-screen flex items-center justify-center relative overflow-hidden"
       style={{
-        backgroundImage: `url(${backgroundImage})`,
+        background: 'linear-gradient(to right, #1a365d, #2d3748)',
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }}
