@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 interface Amenity {
   id: number;
@@ -63,7 +64,7 @@ const AmenityStatus = () => {
     <div className="min-h-screen bg-gradient-to-br from-background to-background/50 p-8">
       <div className="fixed inset-0 -z-10">
         <img
-          src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00"
+          src="https://images.unsplash.com/photo-1554995207-c18c203602cb"
           alt="Modern interior"
           className="w-full h-full object-cover opacity-[0.03]"
         />
@@ -72,12 +73,12 @@ const AmenityStatus = () => {
       <div className="relative max-w-7xl mx-auto space-y-8">
         <Header />
         <div className="grid gap-6">
-          <div className="p-6 rounded-lg glass">
+          <div className="p-6 rounded-lg glass border border-primary/10">
             <h2 className="text-2xl font-light mb-6">Amenity Status</h2>
-            <div className="rounded-lg border">
+            <div className="rounded-lg border border-primary/10 bg-card/30 backdrop-blur-md">
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="border-primary/10">
                     <TableHead>Amenity</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Last Updated</TableHead>
@@ -88,17 +89,21 @@ const AmenityStatus = () => {
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center">Loading...</TableCell>
+                      <TableCell colSpan={5} className="text-center py-8">
+                        <div className="flex items-center justify-center">
+                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ) : amenities?.map((amenity) => (
-                    <TableRow key={amenity.id}>
+                    <TableRow key={amenity.id} className="border-primary/10">
                       <TableCell>{amenity.name}</TableCell>
                       <TableCell>
                         <Select
                           defaultValue={amenity.status}
                           onValueChange={(value) => handleStatusUpdate(amenity.id, value)}
                         >
-                          <SelectTrigger className="w-[140px]">
+                          <SelectTrigger className="w-[140px] bg-background/50 border-primary/10">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -111,7 +116,13 @@ const AmenityStatus = () => {
                       <TableCell>{new Date(amenity.updated_at).toLocaleString()}</TableCell>
                       <TableCell>{amenity.capacity}</TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm">Update Status</Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="border-primary/10 hover:bg-primary/10"
+                        >
+                          Update Status
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

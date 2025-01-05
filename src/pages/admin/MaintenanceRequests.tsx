@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, AlertCircle } from "lucide-react";
+import { Search, AlertCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -88,7 +88,7 @@ const MaintenanceRequests = () => {
     <div className="min-h-screen bg-gradient-to-br from-background to-background/50 p-8">
       <div className="fixed inset-0 -z-10">
         <img
-          src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00"
+          src="https://images.unsplash.com/photo-1554995207-c18c203602cb"
           alt="Modern interior"
           className="w-full h-full object-cover opacity-[0.03]"
         />
@@ -97,7 +97,7 @@ const MaintenanceRequests = () => {
       <div className="relative max-w-7xl mx-auto space-y-8">
         <Header />
         <div className="grid gap-6">
-          <div className="p-6 rounded-lg glass">
+          <div className="p-6 rounded-lg glass border border-primary/10">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-light">Maintenance Requests</h2>
               <div className="flex gap-4">
@@ -107,18 +107,21 @@ const MaintenanceRequests = () => {
                     placeholder="Search requests..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-[300px]"
+                    className="pl-10 w-[300px] bg-background/50 border-primary/10"
                   />
                 </div>
-                <Button onClick={handleScheduleMaintenance}>
+                <Button 
+                  onClick={handleScheduleMaintenance}
+                  className="bg-primary/90 hover:bg-primary transition-colors duration-300"
+                >
                   Schedule Maintenance
                 </Button>
               </div>
             </div>
-            <div className="rounded-lg border">
+            <div className="rounded-lg border border-primary/10 bg-card/30 backdrop-blur-md">
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="border-primary/10">
                     <TableHead>Title</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Priority</TableHead>
@@ -129,27 +132,31 @@ const MaintenanceRequests = () => {
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center">Loading...</TableCell>
+                      <TableCell colSpan={5} className="text-center py-8">
+                        <div className="flex items-center justify-center">
+                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ) : filteredRequests?.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center">
-                        <div className="flex flex-col items-center gap-2 py-4">
-                          <AlertCircle className="h-6 w-6 text-muted-foreground" />
+                        <div className="flex flex-col items-center gap-2 py-8">
+                          <AlertCircle className="h-8 w-8 text-muted-foreground" />
                           <p className="text-muted-foreground">No maintenance requests found</p>
                         </div>
                       </TableCell>
                     </TableRow>
                   ) : (
                     filteredRequests?.map((request) => (
-                      <TableRow key={request.id}>
+                      <TableRow key={request.id} className="border-primary/10">
                         <TableCell>{request.title}</TableCell>
                         <TableCell>
                           <Select
                             defaultValue={request.status}
                             onValueChange={(value) => handleStatusUpdate(request.id, value)}
                           >
-                            <SelectTrigger className="w-[120px]">
+                            <SelectTrigger className="w-[120px] bg-background/50 border-primary/10">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -162,10 +169,10 @@ const MaintenanceRequests = () => {
                         <TableCell>
                           <span className={`px-2 py-1 rounded-full text-sm ${
                             request.priority === 'high' 
-                              ? 'bg-red-100 text-red-800' 
+                              ? 'bg-red-500/10 text-red-500' 
                               : request.priority === 'medium'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-green-100 text-green-800'
+                              ? 'bg-yellow-500/10 text-yellow-500'
+                              : 'bg-green-500/10 text-green-500'
                           }`}>
                             {request.priority}
                           </span>
@@ -173,7 +180,12 @@ const MaintenanceRequests = () => {
                         <TableCell>{new Date(request.created_at).toLocaleDateString()}</TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Button variant="outline" size="sm" onClick={() => setSelectedRequest(request)}>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => setSelectedRequest(request)}
+                              className="border-primary/10 hover:bg-primary/10"
+                            >
                               View Details
                             </Button>
                           </div>

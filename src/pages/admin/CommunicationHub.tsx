@@ -20,7 +20,6 @@ const CommunicationHub = () => {
   const [message, setMessage] = useState("");
 
   const handleSendMessage = () => {
-    // This would typically connect to your backend
     toast({
       title: "Message Sent",
       description: messageType === "broadcast" 
@@ -34,7 +33,7 @@ const CommunicationHub = () => {
     <div className="min-h-screen bg-gradient-to-br from-background to-background/50 p-8">
       <div className="fixed inset-0 -z-10">
         <img
-          src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00"
+          src="https://images.unsplash.com/photo-1554995207-c18c203602cb"
           alt="Modern interior"
           className="w-full h-full object-cover opacity-[0.03]"
         />
@@ -43,17 +42,17 @@ const CommunicationHub = () => {
       <div className="relative max-w-7xl mx-auto space-y-8">
         <Header />
         <div className="grid gap-6">
-          <div className="p-6 rounded-lg glass">
+          <div className="p-6 rounded-lg glass border border-primary/10">
             <h2 className="text-2xl font-light mb-6">Communication Hub</h2>
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="p-4 rounded-lg bg-card/80 border border-primary/10">
+              <div className="p-4 rounded-lg bg-card/30 backdrop-blur-md border border-primary/10">
                 <div className="flex items-center gap-2 mb-4">
                   <MessageSquare className="w-5 h-5 text-primary" />
                   <h3 className="text-lg font-medium">Message Center</h3>
                 </div>
                 <div className="space-y-4">
                   <Select onValueChange={setMessageType} defaultValue="direct">
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-background/50 border-primary/10">
                       <SelectValue placeholder="Select message type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -67,6 +66,7 @@ const CommunicationHub = () => {
                       placeholder="Recipient"
                       value={recipient}
                       onChange={(e) => setRecipient(e.target.value)}
+                      className="bg-background/50 border-primary/10"
                     />
                   )}
                   
@@ -74,11 +74,11 @@ const CommunicationHub = () => {
                     placeholder="Type your message here..."
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    className="min-h-[100px]"
+                    className="min-h-[100px] bg-background/50 border-primary/10"
                   />
                   
                   <Button 
-                    className="w-full"
+                    className="w-full bg-primary/90 hover:bg-primary transition-colors duration-300"
                     onClick={handleSendMessage}
                     disabled={!message || (messageType === "direct" && !recipient)}
                   >
@@ -88,14 +88,13 @@ const CommunicationHub = () => {
                 </div>
               </div>
               
-              <div className="p-4 rounded-lg bg-card/80 border border-primary/10">
+              <div className="p-4 rounded-lg bg-card/30 backdrop-blur-md border border-primary/10">
                 <div className="flex items-center gap-2 mb-4">
                   <Users className="w-5 h-5 text-primary" />
                   <h3 className="text-lg font-medium">Recent Communications</h3>
                 </div>
                 <div className="space-y-4">
-                  {/* Placeholder for recent messages */}
-                  <div className="p-3 bg-background rounded-lg">
+                  <div className="p-3 bg-background/50 rounded-lg border border-primary/10">
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="font-medium">Maintenance Update</p>
