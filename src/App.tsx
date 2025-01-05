@@ -53,6 +53,7 @@ const App = () => (
           <Route path="/resident/community" element={<ResidentCommunity />} />
           <Route path="/resident/messages" element={<ResidentMessages />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/announcements" element={<Announcements />} />
           <Route path="/admin/residents" element={<Residents />} />
           <Route path="/admin/residents/directory" element={<ResidentDirectory />} />
           <Route path="/admin/maintenance" element={<MaintenanceRequests />} />
