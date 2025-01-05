@@ -1,43 +1,44 @@
-import { useState } from "react";
 import Header from "@/components/admin/Header";
+import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Search } from "lucide-react";
+import { Car, Plus } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getVehicles } from "@/utils/api";
 
 const VehicleRegistry = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { toast } = useToast();
+  const { data: vehicles, isLoading } = useQuery({
+    queryKey: ['vehicles'],
+    queryFn: getVehicles
+  });
 
-  const handleRegisterVehicle = () => {
-    toast({
-      title: "Vehicle Registered",
-      description: "The vehicle has been successfully registered.",
-    });
-    setIsDialogOpen(false);
-  };
+  const columns = [
+    {
+      accessorKey: "plate",
+      header: "License Plate",
+    },
+    {
+      accessorKey: "make",
+      header: "Make",
+    },
+    {
+      accessorKey: "model",
+      header: "Model",
+    },
+    {
+      accessorKey: "owner",
+      header: "Owner",
+    },
+    {
+      accessorKey: "spot",
+      header: "Parking Spot",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-background/50 p-8">
       <div className="fixed inset-0 -z-10">
         <img
-          src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00"
+          src="https://images.unsplash.com/photo-1554995207-c18c203602cb"
           alt="Modern interior"
           className="w-full h-full object-cover opacity-[0.03]"
         />
@@ -47,72 +48,22 @@ const VehicleRegistry = () => {
         <Header />
         <div className="grid gap-6">
           <div className="p-6 rounded-lg glass">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-light">Vehicle Registry</h2>
-              <div className="flex gap-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder="Search vehicles..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-[300px]"
-                  />
-                </div>
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button>Register Vehicle</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Register New Vehicle</DialogTitle>
-                    </DialogHeader>
-                    <form className="space-y-4" onSubmit={(e) => {
-                      e.preventDefault();
-                      handleRegisterVehicle();
-                    }}>
-                      <Input placeholder="License Plate" required />
-                      <Input placeholder="Make/Model" required />
-                      <Input placeholder="Owner Name" required />
-                      <Input placeholder="Parking Spot" required />
-                      <Button type="submit" className="w-full">Register Vehicle</Button>
-                    </form>
-                  </DialogContent>
-                </Dialog>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-2">
+                <Car className="h-6 w-6 text-primary" />
+                <h2 className="text-2xl font-light">Vehicle Registry</h2>
               </div>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Register Vehicle
+              </Button>
             </div>
-            <div className="rounded-lg border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>License Plate</TableHead>
-                    <TableHead>Make/Model</TableHead>
-                    <TableHead>Owner</TableHead>
-                    <TableHead>Spot</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell>ABC123</TableCell>
-                    <TableCell>Toyota Camry</TableCell>
-                    <TableCell>John Doe</TableCell>
-                    <TableCell>A-12</TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm">Edit</Button>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>XYZ789</TableCell>
-                    <TableCell>Honda Civic</TableCell>
-                    <TableCell>Jane Smith</TableCell>
-                    <TableCell>B-15</TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm">Edit</Button>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
+            <div className="bg-card/80 border border-primary/10 rounded-lg p-4">
+              <DataTable
+                columns={columns}
+                data={vehicles || []}
+                isLoading={isLoading}
+              />
             </div>
           </div>
         </div>
