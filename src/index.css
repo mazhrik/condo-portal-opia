@@ -39,7 +39,7 @@
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
 
-    --card: 222 47% 11%;
+    --card: 0 0% 0%;
     --card-foreground: 210 40% 98%;
 
     --popover: 222 47% 11%;
@@ -66,6 +66,7 @@
   }
 }
 
+/* Animations */
 @keyframes fade-up {
   from {
     opacity: 0;
@@ -88,6 +89,51 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Glass effect for cards */
+.glass {
+  @apply bg-black/40 backdrop-blur-md border-white/10;
+}
+
+.dark .glass {
+  @apply bg-black/60 border-white/5;
+}
+
+/* Card gradients */
+.card-gradient {
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4));
+}
+
+.dark .card-gradient {
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.7));
+}
+
+/* Button gradients */
+.btn-gradient {
+  @apply bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700;
+}
+
+/* Input styles */
+.input-glass {
+  @apply bg-white/10 border-white/10 text-white placeholder:text-gray-400;
+}
+
+/* Modern scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/50 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary;
 }
 
 /* Animations */
@@ -135,15 +181,15 @@
   animation: slide-up 0.6s ease-out forwards;
 }
 
-.gradient-bg {
-  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+/* Background image for all pages */
+.app-background {
+  @apply fixed inset-0 -z-10;
+  background-image: url('/lovable-uploads/5f307eb2-750f-41ff-aeb3-659ec419eb29.png');
+  background-size: cover;
+  background-position: center;
 }
 
-/* Glass effect */
-.glass {
-  @apply bg-white/10 backdrop-blur-lg border border-white/20;
-}
-
-.dark .glass {
-  @apply bg-black/10 border-white/10;
+.app-background::after {
+  content: '';
+  @apply absolute inset-0 bg-black/30 backdrop-blur-[2px];
 }
