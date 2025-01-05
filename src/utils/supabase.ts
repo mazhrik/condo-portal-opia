@@ -11,6 +11,36 @@ export const TEST_USER = {
   password: 'admin123'
 };
 
+// Function to create test user if it doesn't exist
+export const createTestUser = async () => {
+  const { data: existingUser, error: fetchError } = await supabase
+    .from('users')
+    .select()
+    .eq('email', TEST_USER.email)
+    .single();
+
+  if (!existingUser && !fetchError) {
+    const { data, error } = await supabase.auth.signUp({
+      email: TEST_USER.email,
+      password: TEST_USER.password,
+      options: {
+        data: {
+          role: 'admin'
+        }
+      }
+    });
+    
+    if (error) {
+      console.error('Error creating test user:', error);
+      throw error;
+    }
+    
+    return data;
+  }
+  
+  return existingUser;
+};
+
 export const signInWithGoogle = async () => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',

@@ -1,27 +1,32 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { signInWithEmail, signInWithGoogle, resetPassword } from "@/utils/supabase";
+import { signInWithEmail, signInWithGoogle, resetPassword, createTestUser, TEST_USER } from "@/utils/supabase";
 import { toast } from "sonner";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook, FaApple } from "react-icons/fa";
 import { Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(TEST_USER.email);
+  const [password, setPassword] = useState(TEST_USER.password);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Create test user on component mount
+    createTestUser().catch(console.error);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       const { user } = await signInWithEmail(email, password);
-      if (user?.email?.endsWith("@admin.com")) {
+      if (user?.email?.endsWith("@admin.com") || user?.email === TEST_USER.email) {
         navigate("/admin");
       } else {
         navigate("/resident");
