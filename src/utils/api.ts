@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.example.com';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -24,15 +24,25 @@ export const login = async (email: string, password: string) => {
   return response.data;
 };
 
-// Announcement endpoints
+// Announcement endpoints with error handling
 export const getAnnouncements = async () => {
-  const response = await api.get('/announcements/');
-  return response.data;
+  try {
+    const response = await api.get('/announcements/');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching announcements:', error);
+    throw error;
+  }
 };
 
 export const createAnnouncement = async (data: any) => {
-  const response = await api.post('/announcements/', data);
-  return response.data;
+  try {
+    const response = await api.post('/announcements/', data);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating announcement:', error);
+    throw error;
+  }
 };
 
 // Maintenance request endpoints

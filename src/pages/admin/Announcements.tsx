@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAnnouncements, createAnnouncement } from "@/utils/api";
 import { format } from "date-fns";
+import { Loader2 } from "lucide-react";
 
 const Announcements = () => {
   const [title, setTitle] = useState("");
@@ -14,13 +15,21 @@ const Announcements = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch announcements
-  const { data: announcements, isLoading } = useQuery({
+  // Fetch announcements with error handling
+  const { data: announcements, isLoading, error } = useQuery({
     queryKey: ['announcements'],
-    queryFn: getAnnouncements
+    queryFn: getAnnouncements,
+    onError: (error) => {
+      console.error("Error fetching announcements:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load announcements. Please try again later.",
+        variant: "destructive",
+      });
+    }
   });
 
-  // Create announcement mutation
+  // Create announcement mutation with better error handling
   const createAnnouncementMutation = useMutation({
     mutationFn: createAnnouncement,
     onSuccess: () => {
@@ -36,7 +45,7 @@ const Announcements = () => {
       console.error("Error creating announcement:", error);
       toast({
         title: "Error",
-        description: "Failed to create announcement",
+        description: "Failed to create announcement. Please try again later.",
         variant: "destructive",
       });
     },
@@ -75,7 +84,11 @@ const Announcements = () => {
                 <h3 className="text-lg font-medium mb-4">Recent Announcements</h3>
                 <div className="space-y-4">
                   {isLoading ? (
-                    <p className="text-muted-foreground">Loading announcements...</p>
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  ) : error ? (
+                    <p className="text-destructive">Failed to load announcements</p>
                   ) : announcements?.length === 0 ? (
                     <p className="text-muted-foreground">No announcements yet</p>
                   ) : (
@@ -127,7 +140,14 @@ const Announcements = () => {
                     className="w-full"
                     disabled={createAnnouncementMutation.isPending}
                   >
-                    {createAnnouncementMutation.isPending ? "Creating..." : "Create Announcement"}
+                    {createAnnouncementMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      "Create Announcement"
+                    )}
                   </Button>
                 </form>
               </div>

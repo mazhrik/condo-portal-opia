@@ -1,13 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bell } from "lucide-react";
+import { Bell, Loader2 } from "lucide-react";
 import { getAnnouncements } from "@/utils/api";
 import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 const Announcements = () => {
-  const { data: announcements, isLoading } = useQuery({
+  const { toast } = useToast();
+  const { data: announcements, isLoading, error } = useQuery({
     queryKey: ['announcements'],
     queryFn: getAnnouncements,
+    onError: (error) => {
+      console.error("Error fetching announcements:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load announcements. Please try again later.",
+        variant: "destructive",
+      });
+    }
   });
 
   return (
@@ -25,15 +35,19 @@ const Announcements = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {isLoading ? (
-              <p>Loading announcements...</p>
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : error ? (
+              <p className="text-destructive">Failed to load announcements</p>
             ) : announcements?.length === 0 ? (
-              <p>No announcements available.</p>
+              <p className="text-muted-foreground">No announcements available.</p>
             ) : (
               announcements?.map((announcement: any) => (
-                <div key={announcement.id} className="border-l-4 border-primary p-3 bg-primary-100">
+                <div key={announcement.id} className="border-l-4 border-primary p-4 bg-primary/5 rounded-r-lg">
                   <p className="font-semibold">{announcement.title}</p>
-                  <p className="text-sm text-gray-600">{announcement.content}</p>
-                  <p className="text-sm text-gray-500 mt-2">
+                  <p className="text-sm text-muted-foreground mt-2">{announcement.content}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
                     Posted: {format(new Date(announcement.created_at), 'MMMM d, yyyy')}
                   </p>
                 </div>
