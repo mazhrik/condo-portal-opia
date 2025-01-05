@@ -29,16 +29,18 @@ const AmenityManagement = () => {
       <div className="relative max-w-7xl mx-auto space-y-8">
         <Header />
         <div className="grid gap-6">
-          <div className="p-6 rounded-lg glass">
+          <div className="p-6 rounded-lg glass border border-primary/10 backdrop-blur-md">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-light">Amenity Management</h2>
-              <Button>Add Amenity</Button>
+              <Button className="bg-primary/90 hover:bg-primary transition-colors duration-300">
+                Add Amenity
+              </Button>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {isLoading ? (
-                <p>Loading amenities...</p>
+                <p className="text-muted-foreground">Loading amenities...</p>
               ) : amenities?.map((amenity) => (
-                <Card key={amenity.id}>
+                <Card key={amenity.id} className="backdrop-blur-md bg-card/30 border-primary/10">
                   <CardHeader>
                     <CardTitle>{amenity.name}</CardTitle>
                     <CardDescription>{amenity.description}</CardDescription>
@@ -46,11 +48,19 @@ const AmenityManagement = () => {
                   <CardContent>
                     <div className="flex justify-between items-center">
                       <span className={`px-2 py-1 rounded-full text-sm ${
-                        amenity.status === 'available' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        amenity.status === 'available' 
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                          : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                       }`}>
                         {amenity.status}
                       </span>
-                      <Button variant="outline" size="sm">Manage</Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="border-primary/10 hover:bg-primary/10"
+                      >
+                        Manage
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
