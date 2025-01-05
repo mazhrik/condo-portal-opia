@@ -59,16 +59,22 @@ const PaymentRecords = () => {
                     placeholder="Search payments..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-[300px]"
+                    className="pl-10 w-[300px] bg-background/50 border-primary/10"
                   />
                 </div>
-                <Button variant="outline" onClick={handleExport}>Export</Button>
+                <Button 
+                  variant="outline" 
+                  onClick={handleExport}
+                  className="border-primary/10 hover:bg-primary/10"
+                >
+                  Export
+                </Button>
               </div>
             </div>
-            <div className="rounded-lg border">
+            <div className="rounded-lg border border-primary/10">
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="border-primary/10">
                     <TableHead>Payment ID</TableHead>
                     <TableHead>Amount</TableHead>
                     <TableHead>Status</TableHead>
@@ -87,7 +93,7 @@ const PaymentRecords = () => {
                     </TableRow>
                   ) : (
                     filteredPayments?.map((payment) => (
-                      <TableRow key={payment.id}>
+                      <TableRow key={payment.id} className="border-primary/10">
                         <TableCell>{payment.payment_id}</TableCell>
                         <TableCell>${payment.amount.toLocaleString()}</TableCell>
                         <TableCell>
@@ -99,7 +105,13 @@ const PaymentRecords = () => {
                         </TableCell>
                         <TableCell>{new Date(payment.created_at).toLocaleDateString()}</TableCell>
                         <TableCell>
-                          <Button variant="outline" size="sm">View Details</Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="border-primary/10 hover:bg-primary/10"
+                          >
+                            View Details
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))
