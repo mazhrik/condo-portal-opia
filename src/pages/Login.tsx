@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "@/utils/api";
 import { toast } from "sonner";
+import { FcGoogle } from "react-icons/fc";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -29,74 +30,98 @@ const Login = () => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    try {
+      // This would be replaced with actual Google OAuth implementation
+      toast.info("Google Sign In will be implemented with backend integration");
+    } catch (error) {
+      toast.error("Google Sign In failed");
+    }
+  };
+
+  const handleForgotPassword = () => {
+    // This would be connected to password reset flow
+    toast.info("Password reset link will be sent to your email");
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      {/* Background Image with enhanced visibility */}
-      <div className="absolute inset-0 z-0">
-        <div 
-          className="absolute inset-0 bg-[url('/lovable-uploads/7e125710-72fe-42b2-ba82-b6df6be9e570.png')] 
-          bg-cover bg-center bg-fixed opacity-40"
-        ></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-accent/30"></div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-[#1A1F2C] relative overflow-hidden">
+      {/* Background overlay with modern gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#243949] to-[#517fa4] opacity-50"></div>
 
-      {/* Animated shapes with reduced opacity */}
-      <div className="absolute top-20 left-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-pulse-slow"></div>
-      <div className="absolute bottom-20 right-20 w-64 h-64 bg-accent/10 rounded-full blur-3xl animate-pulse-slow"></div>
+      {/* Animated shapes */}
+      <div className="absolute top-20 left-20 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+      <div className="absolute bottom-20 right-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
 
-      {/* Semi-transparent login card */}
-      <Card className="w-[420px] z-10 bg-white/70 backdrop-blur-md border-white/20 shadow-2xl animate-slide-up">
-        <CardHeader className="space-y-6 pb-8">
-          <div className="w-24 h-24 mx-auto mb-4 relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent opacity-20 rounded-2xl animate-pulse-slow"></div>
-            <img
-              src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1973&q=80"
-              alt="CondoConnect Logo"
-              className="w-full h-full object-cover rounded-2xl shadow-lg animate-float relative z-10"
-            />
-          </div>
-          <CardTitle className="text-4xl font-bold text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            CondoConnect
+      {/* Login Card */}
+      <Card className="w-[420px] z-10 bg-white/10 backdrop-blur-md border-white/20 shadow-2xl">
+        <CardHeader className="space-y-1 pb-8">
+          <CardTitle className="text-2xl font-bold text-center text-white">
+            Sign In
           </CardTitle>
-          <p className="text-center text-muted-foreground">
-            Welcome back! Please login to your account.
+          <p className="text-center text-gray-300">
+            Enter your credentials to access your account
           </p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium text-primary">
-                Email
-              </label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-white/50 border-primary/10 focus:border-primary/30 transition-all duration-300"
+                className="bg-white/20 border-white/10 text-white placeholder:text-gray-400"
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium text-primary">
-                Password
-              </label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="bg-white/50 border-primary/10 focus:border-primary/30 transition-all duration-300"
+                className="bg-white/20 border-white/10 text-white placeholder:text-gray-400"
               />
             </div>
+
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                Forgot Password?
+              </button>
+            </div>
+
             <Button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all duration-300 transform hover:scale-[1.02] text-white font-medium"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
             >
-              Login
+              Sign In
+            </Button>
+
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-500/30"></div>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-[#1A1F2C] px-2 text-gray-400">Or continue with</span>
+              </div>
+            </div>
+
+            <Button 
+              type="button"
+              variant="outline" 
+              onClick={handleGoogleLogin}
+              className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 transition-colors"
+            >
+              <FcGoogle className="mr-2 h-4 w-4" />
+              Sign in with Google
             </Button>
           </form>
         </CardContent>
