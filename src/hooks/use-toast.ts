@@ -90,8 +90,6 @@ export const reducer = (state: State, action: Action): State => {
     case "DISMISS_TOAST": {
       const { toastId } = action
 
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
       if (toastId) {
         addToRemoveQueue(toastId)
       } else {
@@ -126,14 +124,22 @@ export const reducer = (state: State, action: Action): State => {
   }
 }
 
-const listeners: Array<(state: State) => void> = []
+type ToastStore = {
+  state: State
+  listeners: Array<(state: State) => void>
+}
 
-let memoryState: State = { toasts: [] }
+const store: ToastStore = {
+  state: {
+    toasts: [],
+  },
+  listeners: [],
+}
 
 function dispatch(action: Action) {
-  memoryState = reducer(memoryState, action)
-  listeners.forEach((listener) => {
-    listener(memoryState)
+  store.state = reducer(store.state, action)
+  store.listeners.forEach((listener) => {
+    listener(store.state)
   })
 }
 
@@ -169,14 +175,14 @@ function toast({ ...props }: Toast) {
 }
 
 function useToast() {
-  const [state, setState] = React.useState<State>(memoryState)
+  const [state, setState] = React.useState<State>(store.state)
 
   React.useEffect(() => {
-    listeners.push(setState)
+    store.listeners.push(setState)
     return () => {
-      const index = listeners.indexOf(setState)
+      const index = store.listeners.indexOf(setState)
       if (index > -1) {
-        listeners.splice(index, 1)
+        store.listeners.splice(index, 1)
       }
     }
   }, [state])
