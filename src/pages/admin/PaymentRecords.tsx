@@ -30,6 +30,7 @@ const PaymentRecords = () => {
     },
     {
       id: "actions",
+      header: "Actions",
       cell: ({ row }) => (
         <Button variant="ghost" size="sm">
           <Download className="h-4 w-4 mr-2" />
