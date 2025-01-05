@@ -13,14 +13,20 @@ export const TEST_USER = {
 
 // Function to create test user if it doesn't exist
 export const createTestUser = async () => {
-  const { data: existingUser, error: fetchError } = await supabase
-    .from('users')
-    .select()
-    .eq('email', TEST_USER.email)
-    .single();
+  try {
+    // First check if user exists
+    const { data: { user: existingUser }, error: signInError } = await supabase.auth.signInWithPassword({
+      email: TEST_USER.email,
+      password: TEST_USER.password,
+    });
 
-  if (!existingUser && !fetchError) {
-    const { data, error } = await supabase.auth.signUp({
+    if (existingUser) {
+      console.log('Test user already exists');
+      return existingUser;
+    }
+
+    // If user doesn't exist, create new user
+    const { data: { user }, error } = await supabase.auth.signUp({
       email: TEST_USER.email,
       password: TEST_USER.password,
       options: {
@@ -29,16 +35,18 @@ export const createTestUser = async () => {
         }
       }
     });
-    
+
     if (error) {
       console.error('Error creating test user:', error);
       throw error;
     }
-    
-    return data;
+
+    console.log('Test user created successfully');
+    return user;
+  } catch (error) {
+    console.error('Error in createTestUser:', error);
+    throw error;
   }
-  
-  return existingUser;
 };
 
 export const signInWithGoogle = async () => {
@@ -54,13 +62,18 @@ export const signInWithGoogle = async () => {
 };
 
 export const signInWithEmail = async (email: string, password: string) => {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password
-  });
-  
-  if (error) throw error;
-  return data;
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error signing in:', error);
+    throw error;
+  }
 };
 
 export const resetPassword = async (email: string) => {

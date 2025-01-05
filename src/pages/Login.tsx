@@ -17,8 +17,17 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Create test user on component mount
-    createTestUser().catch(console.error);
+    const initializeTestUser = async () => {
+      try {
+        await createTestUser();
+        toast.success('Test user is ready to use');
+      } catch (error) {
+        console.error('Error initializing test user:', error);
+        toast.error('Failed to initialize test user');
+      }
+    };
+
+    initializeTestUser();
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -26,14 +35,17 @@ const Login = () => {
     setIsLoading(true);
     try {
       const { user } = await signInWithEmail(email, password);
-      if (user?.email?.endsWith("@admin.com") || user?.email === TEST_USER.email) {
-        navigate("/admin");
-      } else {
-        navigate("/resident");
+      if (user) {
+        toast.success('Login successful');
+        if (user.email?.endsWith("@admin.com") || user.email === TEST_USER.email) {
+          navigate("/admin");
+        } else {
+          navigate("/resident");
+        }
       }
-      toast.success("Successfully logged in!");
-    } catch (error: any) {
-      toast.error(error.message || "Invalid credentials");
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('Failed to login. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
