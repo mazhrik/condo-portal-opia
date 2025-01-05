@@ -60,17 +60,21 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-[#1a2942] relative overflow-hidden">
       <div className="absolute inset-0">
         <img 
-          src="/lovable-uploads/66879088-b665-4d16-8b71-dd39e82fd024.png" 
-          alt="Background" 
+          src="/lovable-uploads/5f307eb2-750f-41ff-aeb3-659ec419eb29.png" 
+          alt="Luxury Interior" 
           className="w-full h-full object-cover"
         />
+        <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
       </div>
       
-      <Card className="w-[420px] z-10 bg-[#1e2a47]/90 backdrop-blur-sm border-white/10 shadow-2xl">
+      <Card className="w-[420px] z-10 bg-black/40 backdrop-blur-md border-white/10 shadow-2xl animate-fade-up">
         <CardHeader className="space-y-1 pb-4">
           <CardTitle className="text-2xl font-bold text-center text-white">
-            Sign In
+            Welcome Back
           </CardTitle>
+          <p className="text-center text-gray-300">
+            Enter your credentials to access your account
+          </p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
@@ -82,7 +86,7 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-[#2a3854] border-0 text-white placeholder:text-gray-400 h-12"
+                className="bg-white/10 border-white/10 text-white placeholder:text-gray-400 h-12"
               />
             </div>
             <div className="space-y-2 relative">
@@ -93,19 +97,19 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="bg-[#2a3854] border-0 text-white placeholder:text-gray-400 h-12 pr-10"
+                className="bg-white/10 border-white/10 text-white placeholder:text-gray-400 h-12 pr-10"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-gray-400"
+                className="absolute right-3 top-3 text-gray-400 hover:text-gray-300 transition-colors"
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
 
             <div className="flex justify-between items-center">
-              <label className="flex items-center space-x-2 text-sm text-gray-400">
+              <label className="flex items-center space-x-2 text-sm text-gray-300">
                 <input type="checkbox" className="rounded border-gray-400" />
                 <span>Remember Me</span>
               </label>
@@ -120,7 +124,7 @@ const Login = () => {
 
             <Button 
               type="submit" 
-              className="w-full bg-[#4169e1] hover:bg-[#3154b7] text-white h-12"
+              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white h-12"
               disabled={isLoading}
             >
               {isLoading ? "Signing in..." : "Sign In"}
@@ -131,7 +135,7 @@ const Login = () => {
                 <div className="w-full border-t border-gray-500/30"></div>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-[#1e2a47] px-2 text-gray-400">Or continue with</span>
+                <span className="bg-transparent px-2 text-gray-400">Or continue with</span>
               </div>
             </div>
 
@@ -140,21 +144,21 @@ const Login = () => {
                 type="button"
                 variant="outline"
                 onClick={handleGoogleLogin}
-                className="bg-[#2a3854] border-0 hover:bg-[#344567] text-white w-12 h-12 p-0"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-12 h-12 p-0"
               >
                 <FcGoogle className="h-5 w-5" />
               </Button>
               <Button
                 type="button"
                 variant="outline"
-                className="bg-[#2a3854] border-0 hover:bg-[#344567] text-white w-12 h-12 p-0"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-12 h-12 p-0"
               >
                 <FaFacebook className="h-5 w-5 text-blue-500" />
               </Button>
               <Button
                 type="button"
                 variant="outline"
-                className="bg-[#2a3854] border-0 hover:bg-[#344567] text-white w-12 h-12 p-0"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-12 h-12 p-0"
               >
                 <FaApple className="h-5 w-5" />
               </Button>
