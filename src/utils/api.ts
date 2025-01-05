@@ -9,7 +9,6 @@ const api = axios.create({
   },
 });
 
-// Add request interceptor to include auth token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -41,6 +40,28 @@ export const createAnnouncement = async (data: any) => {
     return response.data;
   } catch (error) {
     console.error('Error creating announcement:', error);
+    throw error;
+  }
+};
+
+// User endpoints
+export const getUsers = async () => {
+  try {
+    const response = await api.get('/users/');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    throw error;
+  }
+};
+
+// Vehicle endpoints
+export const getVehicles = async () => {
+  try {
+    const response = await api.get('/vehicles/');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching vehicles:', error);
     throw error;
   }
 };
