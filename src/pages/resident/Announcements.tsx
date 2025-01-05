@@ -29,7 +29,7 @@ const Announcements = () => {
             ) : announcements?.length === 0 ? (
               <p>No announcements available.</p>
             ) : (
-              announcements?.map((announcement) => (
+              announcements?.map((announcement: any) => (
                 <div key={announcement.id} className="border-l-4 border-primary p-3 bg-primary-100">
                   <p className="font-semibold">{announcement.title}</p>
                   <p className="text-sm text-gray-600">{announcement.content}</p>

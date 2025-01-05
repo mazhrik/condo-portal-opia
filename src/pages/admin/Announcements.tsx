@@ -33,6 +33,7 @@ const Announcements = () => {
       setContent("");
     },
     onError: (error) => {
+      console.error("Error creating announcement:", error);
       toast({
         title: "Error",
         description: "Failed to create announcement",
