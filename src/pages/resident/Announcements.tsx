@@ -10,13 +10,15 @@ const Announcements = () => {
   const { data: announcements, isLoading, error } = useQuery({
     queryKey: ['announcements'],
     queryFn: getAnnouncements,
-    onError: (error) => {
-      console.error("Error fetching announcements:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load announcements. Please try again later.",
-        variant: "destructive",
-      });
+    meta: {
+      onError: (error: Error) => {
+        console.error("Error fetching announcements:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load announcements. Please try again later.",
+          variant: "destructive",
+        });
+      }
     }
   });
 
