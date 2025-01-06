@@ -42,6 +42,19 @@ export const createTestAdminUser = async () => {
   const password = 'admin123';
 
   try {
+    // First, try to sign in with these credentials
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    // If sign in succeeds, user already exists
+    if (signInData?.user) {
+      console.log('Admin user already exists');
+      return { email, password };
+    }
+
+    // If user doesn't exist, create new user
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -65,12 +78,7 @@ export const createTestAdminUser = async () => {
   }
 };
 
-// Initialize test admin user
-(async () => {
-  try {
-    console.log('Initializing test admin user...');
-    await createTestAdminUser();
-  } catch (error) {
-    console.error('Error initializing test user:', error);
-  }
-})();
+// Initialize test admin user - but don't block the app if it fails
+createTestAdminUser().catch(error => {
+  console.error('Failed to initialize admin user:', error);
+});
