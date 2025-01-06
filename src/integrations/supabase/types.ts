@@ -9,7 +9,224 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      announcements: {
+        Row: {
+          building_id: string | null
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          title: string
+        }
+        Insert: {
+          building_id?: string | null
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          title: string
+        }
+        Update: {
+          building_id?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "announcements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      apartments: {
+        Row: {
+          building_id: string | null
+          created_at: string
+          floor_number: number | null
+          id: string
+          status: string | null
+          unit_number: string
+        }
+        Insert: {
+          building_id?: string | null
+          created_at?: string
+          floor_number?: number | null
+          id?: string
+          status?: string | null
+          unit_number: string
+        }
+        Update: {
+          building_id?: string | null
+          created_at?: string
+          floor_number?: number | null
+          id?: string
+          status?: string | null
+          unit_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apartments_building_id_fkey"
+            columns: ["building_id"]
+            isOneToOne: false
+            referencedRelation: "buildings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      buildings: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      maintenance_requests: {
+        Row: {
+          apartment_id: string | null
+          created_at: string
+          description: string
+          id: string
+          issue_type: string
+          priority: string | null
+          resident_id: string | null
+          status: string | null
+        }
+        Insert: {
+          apartment_id?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          issue_type: string
+          priority?: string | null
+          resident_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          apartment_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          issue_type?: string
+          priority?: string | null
+          resident_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_requests_apartment_id_fkey"
+            columns: ["apartment_id"]
+            isOneToOne: false
+            referencedRelation: "apartments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_requests_resident_id_fkey"
+            columns: ["resident_id"]
+            isOneToOne: false
+            referencedRelation: "residents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          role: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          role?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          role?: string | null
+        }
+        Relationships: []
+      }
+      residents: {
+        Row: {
+          apartment_id: string | null
+          created_at: string
+          id: string
+          move_in_date: string | null
+          move_out_date: string | null
+          profile_id: string | null
+          status: string | null
+        }
+        Insert: {
+          apartment_id?: string | null
+          created_at?: string
+          id?: string
+          move_in_date?: string | null
+          move_out_date?: string | null
+          profile_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          apartment_id?: string | null
+          created_at?: string
+          id?: string
+          move_in_date?: string | null
+          move_out_date?: string | null
+          profile_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "residents_apartment_id_fkey"
+            columns: ["apartment_id"]
+            isOneToOne: false
+            referencedRelation: "apartments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "residents_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
