@@ -1,13 +1,13 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 import ParkingPage from './pages/resident/Parking';
 
-const App = () => {
+const App: React.FC = () => {
   return (
-    <Router>
-      <Routes>
-        <Route path="/resident/parking" element={<ParkingPage />} />
-      </Routes>
-    </Router>
+    <Routes>
+      <Route path="/parking" element={<ParkingPage />} />
+      {/* Add other routes as needed */}
+    </Routes>
   );
 };
 
