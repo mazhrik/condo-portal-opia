@@ -1,44 +1,23 @@
-interface Location {
-  lat: number;
-  lng: number;
-}
+import { supabase } from '@/integrations/supabase/client';
 
-interface PlaceResult {
+export interface Place {
   name: string;
-  vicinity: string;
-  rating?: number;
+  address: string;
+  rating: number;
   types: string[];
-  geometry: {
-    location: Location;
-  };
+  distance?: number;
 }
 
-export const searchNearbyPlaces = async (location: Location): Promise<PlaceResult[]> => {
-  return new Promise((resolve, reject) => {
-    if (!window.google) {
-      reject(new Error('Google Maps API not loaded'));
-      return;
-    }
+export const getNearbyPlaces = async (latitude: number, longitude: number, radius: number = 1000): Promise<Place[]> => {
+  try {
+    const { data, error } = await supabase.functions.invoke('getNearbyPlaces', {
+      body: { latitude, longitude, radius }
+    });
 
-    const service = new window.google.maps.places.PlacesService(
-      document.createElement('div')
-    );
-
-    const request = {
-      location: new window.google.maps.LatLng(location.lat, location.lng),
-      radius: 1000, // 1km radius
-      type: ['parking']
-    };
-
-    service.nearbySearch(
-      request,
-      (results: google.maps.places.PlaceResult[] | null, status: google.maps.places.PlacesServiceStatus) => {
-        if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
-          resolve(results as PlaceResult[]);
-        } else {
-          reject(new Error('Failed to fetch nearby places'));
-        }
-      }
-    );
-  });
-};
+    if (error) throw error;
+    return data.places;
+  } catch (error) {
+    console.error('Error fetching nearby places:', error);
+    throw error;
+  }
+}
