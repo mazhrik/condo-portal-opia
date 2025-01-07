@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { getNearbyParkingSpots, type NearbyPlace } from '@/services/parkingService';
+import { getNearbyPlaces, type Place } from '@/services/placesService';
 
 const ParkingPage = () => {
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [parkingSpots, setParkingSpots] = useState<NearbyPlace[]>([]);
+  const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Get user's current location
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
@@ -16,10 +15,11 @@ const ParkingPage = () => {
           setLocation({ lat: latitude, lng: longitude });
           
           try {
-            const spots = await getNearbyParkingSpots(latitude, longitude);
-            setParkingSpots(spots);
+            const nearbyPlaces = await getNearbyPlaces(latitude, longitude);
+            setPlaces(nearbyPlaces);
           } catch (err) {
-            setError('Failed to fetch parking spots');
+            setError('Failed to fetch nearby places');
+            console.error(err);
           } finally {
             setLoading(false);
           }
@@ -53,7 +53,7 @@ const ParkingPage = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Nearby Parking Spots</h1>
+      <h1 className="text-2xl font-bold mb-6">Nearby Places</h1>
       
       {location && (
         <p className="mb-4 text-gray-600">
@@ -62,21 +62,23 @@ const ParkingPage = () => {
       )}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {parkingSpots.map((spot, index) => (
+        {places.map((place, index) => (
           <div 
             key={index}
             className="p-4 border rounded-lg shadow-sm hover:shadow-md transition-shadow"
           >
-            <h3 className="font-semibold text-lg">{spot.name}</h3>
-            <p className="text-gray-600">{spot.address}</p>
-            <p className="text-sm text-gray-500">Distance: {spot.distance}m</p>
-            {spot.available_spots !== undefined && (
-              <p className="mt-2 font-medium">
-                Available spots: {spot.available_spots}
+            <h3 className="font-semibold text-lg">{place.name}</h3>
+            <p className="text-gray-600">{place.vicinity}</p>
+            <p className="text-sm text-gray-500">
+              Distance: {(place.distance / 1000).toFixed(2)}km
+            </p>
+            {place.rating && (
+              <p className="mt-2">
+                Rating: {place.rating} ⭐
               </p>
             )}
             <span className="mt-2 inline-block px-2 py-1 text-xs rounded bg-gray-100">
-              {spot.type}
+              {place.type}
             </span>
           </div>
         ))}
