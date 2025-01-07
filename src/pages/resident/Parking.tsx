@@ -1,125 +1,90 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Car, Loader2 } from "lucide-react";
-import { getParkingSpots, getVisitorPasses, requestVisitorPass } from "@/utils/api";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import React, { useEffect, useState } from 'react';
+import { loadGoogleMapsApi } from '@/utils/loadGoogleMapsApi';
+import { searchNearbyPlaces } from '@/services/placesService';
+import { Alert } from '@/components/ui/alert';
+import { Loader2 } from 'lucide-react';
 
-const Parking = () => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [visitorName, setVisitorName] = useState("");
-  const [vehicleNumber, setVehicleNumber] = useState("");
+interface Location {
+  lat: number;
+  lng: number;
+}
 
-  const { data: parkingSpot } = useQuery({
-    queryKey: ['parking-spots'],
-    queryFn: getParkingSpots,
-  });
+const ParkingPage = () => {
+  const [places, setPlaces] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const { data: visitorPasses } = useQuery({
-    queryKey: ['visitor-passes'],
-    queryFn: getVisitorPasses,
-  });
+  useEffect(() => {
+    const initializePlaces = async () => {
+      try {
+        // Load Google Maps API
+        await loadGoogleMapsApi();
 
-  const requestPassMutation = useMutation({
-    mutationFn: requestVisitorPass,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['visitor-passes'] });
-      setIsDialogOpen(false);
-      setVisitorName("");
-      setVehicleNumber("");
-      toast({
-        title: "Success",
-        description: "Visitor pass requested successfully",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to request visitor pass",
-        variant: "destructive",
-      });
-    },
-  });
+        // Get user's location
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject);
+        });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    requestPassMutation.mutate({
-      visitor_name: visitorName,
-      vehicle_number: vehicleNumber,
-      from_date: new Date(),
-      to_date: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
-    });
-  };
+        const location: Location = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+
+        // Search for nearby places
+        const nearbyPlaces = await searchNearbyPlaces(location);
+        setPlaces(nearbyPlaces);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializePlaces();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4">
+        <Alert variant="destructive">{error}</Alert>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-background/50 p-8">
-      <div className="fixed inset-0 -z-10">
-        <img
-          src="/lovable-uploads/5f307eb2-750f-41ff-aeb3-659ec419eb29.png"
-          alt="Modern interior"
-          className="w-full h-full object-cover opacity-[0.03]"
-        />
-      </div>
-      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-background to-background/50" />
-      <div className="relative max-w-7xl mx-auto space-y-8">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Parking</h1>
-          <p className="text-gray-400">Manage your parking space and visitor passes</p>
-        </header>
-
-        <div className="space-y-6">
-          <Card className="glass">
-            <CardHeader className="flex flex-row items-center space-x-4">
-              <Car className="w-8 h-8 text-amber-500" />
-              <CardTitle className="text-white">Parking Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm font-medium text-gray-300">Your Spot: {parkingSpot?.[0]?.spot_number}</p>
-                <p className="text-sm text-gray-400">
-                  Visitor Passes Available: {visitorPasses?.filter(pass => pass.is_active).length || 0}
-                </p>
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="w-full mt-2 btn-gradient">Request Visitor Pass</Button>
-                  </DialogTrigger>
-                  <DialogContent className="glass border-white/10">
-                    <DialogHeader>
-                      <DialogTitle className="text-white">Request Visitor Pass</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      <Input
-                        placeholder="Visitor Name"
-                        value={visitorName}
-                        onChange={(e) => setVisitorName(e.target.value)}
-                        required
-                        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                      />
-                      <Input
-                        placeholder="Vehicle Number"
-                        value={vehicleNumber}
-                        onChange={(e) => setVehicleNumber(e.target.value)}
-                        required
-                        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                      />
-                      <Button type="submit" className="w-full btn-gradient">
-                        Request Pass
-                      </Button>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Nearby Parking Spots</h1>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {places.map((place, index) => (
+          <div key={index} className="p-4 border rounded-lg shadow-sm">
+            <h2 className="font-semibold">{place.name}</h2>
+            <p className="text-gray-600">{place.vicinity}</p>
+            {place.rating && (
+              <p className="text-yellow-600">Rating: {place.rating} ⭐</p>
+            )}
+            <div className="mt-2">
+              {place.types.map((type: string, idx: number) => (
+                <span
+                  key={idx}
+                  className="inline-block bg-gray-100 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2"
+                >
+                  {type.replace(/_/g, ' ')}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
 };
 
-export default Parking;
+export default ParkingPage;

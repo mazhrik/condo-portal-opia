@@ -1,14 +1,16 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import ParkingPage from './pages/resident/parking';
+import { Routes, Route } from 'react-router-dom';
+import ParkingPage from './pages/resident/Parking'; // Fixed casing here
 
 const App = () => {
   return (
-    <Router>
-      <Routes>
-        <Route path="/resident/parking" element={<ParkingPage />} />
-      </Routes>
-    </Router>
+    <Routes>
+      <Route path="/parking" element={<ParkingPage />} />
+      <Route path="/" element={<HomePage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/contact" element={<ContactPage />} />
+      {/* Add other routes here */}
+    </Routes>
   );
 };
 
