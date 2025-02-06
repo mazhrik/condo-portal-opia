@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import {
   Sidebar,
@@ -34,7 +35,7 @@ const menuItems = [
   },
   {
     title: "Maintenance",
-    url: "/resident/maintenance",
+    url: "/maintenance-requests",
     icon: Building,
   },
   {
