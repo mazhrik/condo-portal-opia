@@ -1,4 +1,3 @@
-
 const Index = () => {
   return (
     <div className="min-h-screen relative">
@@ -13,12 +12,6 @@ const Index = () => {
               className="btn-gradient text-white px-8 py-3 rounded-lg inline-block transition-all duration-300 hover:scale-105"
             >
               Resident Portal
-            </a>
-            <a 
-              href="/maintenance-requests" 
-              className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-3 rounded-lg inline-block transition-all duration-300 hover:bg-white/20"
-            >
-              Maintenance Requests
             </a>
             <a 
               href="/admin" 
