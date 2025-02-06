@@ -66,20 +66,45 @@ export const getVehicles = async () => {
   }
 };
 
-// Maintenance request endpoints
+// Maintenance request endpoints with error handling
 export const getMaintenanceRequests = async () => {
-  const response = await api.get('/maintenance-requests/');
-  return response.data;
+  try {
+    const response = await api.get('/maintenance-requests/');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching maintenance requests:', error);
+    throw error;
+  }
 };
 
 export const createMaintenanceRequest = async (data: any) => {
-  const response = await api.post('/maintenance-requests/', data);
-  return response.data;
+  try {
+    const response = await api.post('/maintenance-requests/', data);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating maintenance request:', error);
+    throw error;
+  }
 };
 
 export const updateMaintenanceRequest = async (id: number, data: any) => {
-  const response = await api.put(`/maintenance-requests/${id}/`, data);
-  return response.data;
+  try {
+    const response = await api.put(`/maintenance-requests/${id}/`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating maintenance request:', error);
+    throw error;
+  }
+};
+
+export const updateMaintenanceStatus = async (id: number, status: string) => {
+  try {
+    const response = await api.post(`/maintenance-requests/${id}/update_status/`, { status });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating maintenance status:', error);
+    throw error;
+  }
 };
 
 // Amenity endpoints

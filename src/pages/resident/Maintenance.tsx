@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,7 @@ const Maintenance = () => {
 
   const { data: requests, isLoading } = useQuery({
     queryKey: ['maintenance-requests'],
-    queryFn: getMaintenanceRequests,
+    queryFn: getMaintenanceRequests
   });
 
   const createMutation = useMutation({
@@ -47,7 +48,8 @@ const Maintenance = () => {
     createMutation.mutate({
       title,
       description,
-      status: 'pending'
+      status: 'pending',
+      priority: 'medium'
     });
   };
 

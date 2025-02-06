@@ -21,12 +21,21 @@ class MaintenanceRequest(models.Model):
         ('completed', 'Completed'),
     ]
     
-    resident = models.ForeignKey(Resident, on_delete=models.CASCADE)
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+    ]
+    
+    resident = models.ForeignKey('Resident', on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     description = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    assigned_to = models.ForeignKey('Staff', on_delete=models.SET_NULL, null=True, blank=True)
+    completion_notes = models.TextField(blank=True, null=True)
 
 class Payment(models.Model):
     STATUS_CHOICES = [
