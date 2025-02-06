@@ -1,12 +1,18 @@
 import React from 'react';
-import Maintenance from "./pages/resident/maintenance"; // Fixed casing here
+import { Routes, Route } from 'react-router-dom';
+import { useAuth } from './hooks/useAuth';
+import maintenance from "./pages/resident/maintenance";
+import AdminMaintenance from "./pages/admin/maintenance";
+import ResidentMaintenance from "./pages/resident/maintenance";
 
 const App = () => {
+  const { user } = useAuth();
+
   return (
-    <div>
-      <h1>Welcome to the App</h1>
-      <Maintenance />
-    </div>
+    <Routes>
+      <Route path="/admin/maintenance" element={<AdminMaintenance />} />
+      <Route path="/resident/maintenance" element={<ResidentMaintenance />} />
+    </Routes>
   );
 };
 
