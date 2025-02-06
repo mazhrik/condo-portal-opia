@@ -1,16 +1,16 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
-import AdminMaintenance from "./pages/admin/maintenance";
-import ResidentMaintenance from "./pages/resident/maintenance";
+import AdminMaintenance from "./pages/admin/Maintenance";
+import ResidentMaintenance from "./pages/resident/Maintenance";
 
 const App = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   return (
     <Routes>
+      <Route path="/maintenance" element={<ResidentMaintenance />} />
       <Route path="/admin/maintenance" element={<AdminMaintenance />} />
-      <Route path="/resident/maintenance" element={<ResidentMaintenance />} />
     </Routes>
   );
 };
