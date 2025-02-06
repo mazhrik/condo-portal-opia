@@ -1,31 +1,49 @@
 # Build stage
-FROM node:18-alpine as build
+FROM node:18.17-alpine as builder
 
+# Set working directory
 WORKDIR /app
 
-# Copy package files
+# Install dependencies first (better cache utilization)
 COPY package*.json ./
+COPY bun.lockb ./
+RUN npm ci
 
-# Install dependencies
-RUN npm install
-
-# Copy project files
+# Copy source code
 COPY . .
 
-# Build the project
+# Build the application
 RUN npm run build
 
 # Production stage
-FROM nginx:alpine
+FROM nginx:stable-alpine
 
-# Copy built assets from build stage
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# Copy nginx configuration if you have any custom config
+# Copy custom nginx config if needed
 # COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 80
+# Copy built assets from builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Add nginx configuration for React routing
+RUN echo '                                            \
+server {                                             \
+    listen 80;                                       \
+    location / {                                     \
+        root /usr/share/nginx/html;                  \
+        index index.html;                            \
+        try_files $uri $uri/ /index.html;            \
+    }                                               \
+}' > /etc/nginx/conf.d/default.conf
+
+# Switch to non-root user
+RUN addgroup -g 1001 appgroup && \
+    adduser -u 1001 -G appgroup -g 'appuser' -s /bin/sh -D appuser && \
+    chown -R appuser:appgroup /usr/share/nginx/html
+
+USER appuser
+
+# Expose port
 EXPOSE 80
 
-# Start nginx
+# Start Nginx
 CMD ["nginx", "-g", "daemon off;"]
