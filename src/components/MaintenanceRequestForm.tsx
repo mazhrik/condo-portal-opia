@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabase';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,39 +16,30 @@ import { useToast } from "@/components/ui/use-toast";
 const MaintenanceRequestForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     issueType: '',
+    priority: 'normal',
     description: '',
-    priority: 'normal'
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to submit a request",
-          variant: "destructive",
-        });
-        return;
-      }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
 
       // Get the resident information for the current user
-      const { data: residentData } = await supabase
+      const { data: residentData, error: residentError } = await supabase
         .from('residents')
         .select('id, apartment_id')
-        .eq('profile_id', userData.user.id)
+        .eq('profile_id', user.id)
         .single();
 
-      if (!residentData) {
-        toast({
-          title: "Error",
-          description: "Resident information not found",
-          variant: "destructive",
-        });
-        return;
+      if (residentError || !residentData) {
+        throw new Error('Resident information not found');
       }
 
       const { error } = await supabase.from('maintenance_requests').insert({
@@ -67,67 +58,62 @@ const MaintenanceRequestForm = () => {
         description: "Maintenance request submitted successfully",
       });
       navigate('/maintenance-requests');
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message || "Failed to submit maintenance request",
+        description: "Failed to submit maintenance request",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto p-6">
       <div className="space-y-2">
-        <label className="text-sm font-medium">Issue Type</label>
-        <Select
-          onValueChange={(value) => setFormData({ ...formData, issueType: value })}
+        <label htmlFor="issueType" className="text-sm font-medium">Issue Type</label>
+        <Input
+          id="issueType"
+          value={formData.issueType}
+          onChange={(e) => setFormData(prev => ({ ...prev, issueType: e.target.value }))}
           required
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select issue type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="plumbing">Plumbing</SelectItem>
-            <SelectItem value="electrical">Electrical</SelectItem>
-            <SelectItem value="hvac">HVAC</SelectItem>
-            <SelectItem value="appliance">Appliance</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
-          </SelectContent>
-        </Select>
+          placeholder="e.g., Plumbing, Electrical, etc."
+        />
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Priority</label>
+        <label htmlFor="priority" className="text-sm font-medium">Priority</label>
         <Select
-          onValueChange={(value) => setFormData({ ...formData, priority: value })}
-          defaultValue="normal"
+          value={formData.priority}
+          onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value }))}
         >
           <SelectTrigger>
-            <SelectValue />
+            <SelectValue placeholder="Select priority" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="low">Low</SelectItem>
             <SelectItem value="normal">Normal</SelectItem>
             <SelectItem value="high">High</SelectItem>
-            <SelectItem value="emergency">Emergency</SelectItem>
+            <SelectItem value="urgent">Urgent</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium">Description</label>
+        <label htmlFor="description" className="text-sm font-medium">Description</label>
         <Textarea
+          id="description"
           value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          placeholder="Please describe the issue in detail"
+          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
           required
-          className="h-32"
+          placeholder="Please describe the issue in detail"
+          rows={4}
         />
       </div>
 
-      <Button type="submit" className="w-full">
-        Submit Request
+      <Button type="submit" disabled={loading}>
+        {loading ? 'Submitting...' : 'Submit Request'}
       </Button>
     </form>
   );

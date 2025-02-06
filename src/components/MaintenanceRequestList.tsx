@@ -1,14 +1,7 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { supabase } from '../lib/supabase';
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 
 interface MaintenanceRequest {
@@ -22,20 +15,26 @@ interface MaintenanceRequest {
 
 const MaintenanceRequestList = () => {
   const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    fetchRequests();
+  }, []);
 
   const fetchRequests = async () => {
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) return;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
 
+      // Get the resident ID for the current user
       const { data: residentData } = await supabase
         .from('residents')
         .select('id')
-        .eq('profile_id', userData.user.id)
+        .eq('profile_id', user.id)
         .single();
 
-      if (!residentData) return;
+      if (!residentData) throw new Error('Resident not found');
 
       const { data, error } = await supabase
         .from('maintenance_requests')
@@ -45,82 +44,72 @@ const MaintenanceRequestList = () => {
 
       if (error) throw error;
       setRequests(data || []);
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message || "Failed to fetch maintenance requests",
+        description: "Failed to fetch maintenance requests",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchRequests();
-  }, []);
-
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'low': return 'bg-blue-100 text-blue-800';
-      case 'normal': return 'bg-green-100 text-green-800';
-      case 'high': return 'bg-yellow-100 text-yellow-800';
-      case 'emergency': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'urgent': return 'bg-red-500';
+      case 'high': return 'bg-orange-500';
+      case 'normal': return 'bg-blue-500';
+      case 'low': return 'bg-green-500';
+      default: return 'bg-gray-500';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'completed': return 'bg-green-500';
+      case 'in_progress': return 'bg-blue-500';
+      case 'pending': return 'bg-yellow-500';
+      default: return 'bg-gray-500';
     }
   };
 
+  if (loading) {
+    return <div className="text-center p-6">Loading...</div>;
+  }
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto p-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">My Maintenance Requests</h2>
-        <Button onClick={() => window.location.href = '/maintenance-requests/new'}>
-          New Request
-        </Button>
-      </div>
-
-      <div className="grid gap-6">
-        {requests.map((request) => (
-          <Card key={request.id}>
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="capitalize">{request.issue_type}</CardTitle>
-                  <CardDescription>
-                    Submitted on {new Date(request.created_at).toLocaleDateString()}
-                  </CardDescription>
-                </div>
-                <div className="flex gap-2">
-                  <Badge className={getPriorityColor(request.priority)}>
-                    {request.priority}
-                  </Badge>
-                  <Badge className={getStatusColor(request.status)}>
-                    {request.status}
-                  </Badge>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">{request.description}</p>
-            </CardContent>
-          </Card>
-        ))}
-        
-        {requests.length === 0 && (
-          <Card>
-            <CardContent className="p-6 text-center text-gray-500">
-              No maintenance requests found
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      <h2 className="text-2xl font-bold mb-6">My Maintenance Requests</h2>
+      {requests.length === 0 ? (
+        <p className="text-center text-gray-500">No maintenance requests found.</p>
+      ) : (
+        <div className="space-y-4">
+          {requests.map((request) => (
+            <Card key={request.id}>
+              <CardHeader>
+                <CardTitle className="flex justify-between items-center">
+                  <span>{request.issue_type}</span>
+                  <div className="flex gap-2">
+                    <Badge className={getPriorityColor(request.priority)}>
+                      {request.priority}
+                    </Badge>
+                    <Badge className={getStatusColor(request.status)}>
+                      {request.status}
+                    </Badge>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-2">{request.description}</p>
+                <p className="text-sm text-gray-400">
+                  Submitted on: {new Date(request.created_at).toLocaleDateString()}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
