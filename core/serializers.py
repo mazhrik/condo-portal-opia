@@ -24,9 +24,20 @@ class AnnouncementSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class MaintenanceRequestSerializer(serializers.ModelSerializer):
+    resident_name = serializers.SerializerMethodField()
+    assigned_to_name = serializers.SerializerMethodField()
+
     class Meta:
         model = MaintenanceRequest
         fields = '__all__'
+
+    def get_resident_name(self, obj):
+        return f"{obj.resident.user.first_name} {obj.resident.user.last_name}"
+
+    def get_assigned_to_name(self, obj):
+        if obj.assigned_to:
+            return f"{obj.assigned_to.user.first_name} {obj.assigned_to.user.last_name}"
+        return None
 
 class PaymentSerializer(serializers.ModelSerializer):
     class Meta:

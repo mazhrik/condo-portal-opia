@@ -2,6 +2,9 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+from .models import MaintenanceRequest, Resident
+from .serializers import MaintenanceRequestSerializer
 from .models import (
     Resident, MaintenanceRequest, Payment, Amenity, AmenityBooking,
     ParkingSpot, VisitorParking, Document, ForumPost, ForumComment,
@@ -30,9 +33,27 @@ class MaintenanceRequestViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        if hasattr(self.request.user, 'resident'):
-            return MaintenanceRequest.objects.filter(resident=self.request.user.resident)
+        user = self.request.user
+        if hasattr(user, 'staff'):
+            return MaintenanceRequest.objects.all().order_by('-created_at')
+        elif hasattr(user, 'resident'):
+            return MaintenanceRequest.objects.filter(resident=user.resident).order_by('-created_at')
         return MaintenanceRequest.objects.none()
+
+    def perform_create(self, serializer):
+        resident = get_object_or_404(Resident, user=self.request.user)
+        serializer.save(resident=resident)
+
+    @action(detail=True, methods=['post'])
+    def update_status(self, request, pk=None):
+        maintenance_request = self.get_object()
+        status = request.data.get('status')
+        if status in dict(MaintenanceRequest.STATUS_CHOICES):
+            maintenance_request.status = status
+            maintenance_request.save()
+            serializer = self.get_serializer(maintenance_request)
+            return Response(serializer.data)
+        return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
 
 class PaymentViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentSerializer

@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import Header from "@/components/admin/Header";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getMaintenanceRequests, updateMaintenanceRequest } from "@/utils/api";
+import { getMaintenanceRequests, updateMaintenanceStatus } from "@/utils/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,39 +29,26 @@ import {
 } from "@/components/ui/select";
 import { Search, AlertCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
-
-interface MaintenanceRequest {
-  id: number;
-  title: string;
-  description: string;
-  status: 'pending' | 'in_progress' | 'completed';
-  priority: 'high' | 'medium' | 'low';
-  created_at: string;
-}
 
 const MaintenanceRequests = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedRequest, setSelectedRequest] = useState<MaintenanceRequest | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const navigate = useNavigate();
 
-  const { data: requests, isLoading } = useQuery<MaintenanceRequest[]>({
+  const { data: requests, isLoading } = useQuery({
     queryKey: ['maintenance-requests'],
     queryFn: getMaintenanceRequests
   });
 
   const updateMutation = useMutation({
-    mutationFn: (params: { id: number; data: { status: string } }) => 
-      updateMaintenanceRequest(params.id, params.data),
+    mutationFn: ({ id, status }: { id: number; status: string }) => 
+      updateMaintenanceStatus(id, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['maintenance-requests'] });
       toast({
         title: "Status updated",
         description: "The maintenance request has been updated successfully.",
       });
-      setSelectedRequest(null);
     },
     onError: () => {
       toast({
@@ -72,11 +60,7 @@ const MaintenanceRequests = () => {
   });
 
   const handleStatusUpdate = (id: number, status: string) => {
-    updateMutation.mutate({ id, data: { status } });
-  };
-
-  const handleScheduleMaintenance = () => {
-    navigate('/admin/maintenance/schedule');
+    updateMutation.mutate({ id, status });
   };
 
   const filteredRequests = requests?.filter(request =>
@@ -100,22 +84,14 @@ const MaintenanceRequests = () => {
           <div className="p-6 rounded-lg glass border border-primary/10">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-light">Maintenance Requests</h2>
-              <div className="flex gap-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder="Search requests..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-[300px] bg-background/50 border-primary/10"
-                  />
-                </div>
-                <Button 
-                  onClick={handleScheduleMaintenance}
-                  className="bg-primary/90 hover:bg-primary transition-colors duration-300"
-                >
-                  Schedule Maintenance
-                </Button>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search requests..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-[300px] bg-background/50 border-primary/10"
+                />
               </div>
             </div>
             <div className="rounded-lg border border-primary/10 bg-card/30 backdrop-blur-md">
@@ -125,8 +101,8 @@ const MaintenanceRequests = () => {
                     <TableHead>Title</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Priority</TableHead>
+                    <TableHead>Resident</TableHead>
                     <TableHead>Date</TableHead>
-                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -177,19 +153,8 @@ const MaintenanceRequests = () => {
                             {request.priority}
                           </span>
                         </TableCell>
+                        <TableCell>{request.resident_name}</TableCell>
                         <TableCell>{new Date(request.created_at).toLocaleDateString()}</TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              onClick={() => setSelectedRequest(request)}
-                              className="border-primary/10 hover:bg-primary/10"
-                            >
-                              View Details
-                            </Button>
-                          </div>
-                        </TableCell>
                       </TableRow>
                     ))
                   )}
