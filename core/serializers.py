@@ -90,3 +90,26 @@ class StaffSerializer(serializers.ModelSerializer):
     class Meta:
         model = Staff
         fields = '__all__'
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth.models import User
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['email'] = user.email  # Add email in JWT payload
+        return token
+
+    def validate(self, attrs):
+        # Default validation
+        data = super().validate(attrs)
+        
+        # Extra custom response
+        data.update({
+            'user_id': self.user.id,
+            'email': self.user.email,
+            'first_name': self.user.first_name,
+            'last_name': self.user.last_name,
+        })
+        
+        return data

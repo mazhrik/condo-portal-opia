@@ -20,25 +20,35 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
   
+    console.log("Attempting login with:", { email, password });
+  
     try {
-      // First, try Supabase login
-      const { user } = await signInWithEmail(email, password);
+      const response = await api.post("/token/", {
+        username: email,  // Use "email" instead of "username"
+        password,
+      });
   
-      // If Supabase login is successful, also log into Django
-      const response = await api.post("/api/token/", { username: email, password });
+      console.log("Login response:", response.data);
   
-      localStorage.setItem("accessToken", response.data.access); // Store access token
-      localStorage.setItem("refreshToken", response.data.refresh); // Store refresh token (if needed)
+      localStorage.setItem("accessToken", response.data.access); 
+      localStorage.setItem("refreshToken", response.data.refresh); 
   
       toast.success("Successfully logged in!");
+  
       
-      if (user?.email?.endsWith("@admin.com")) {
+      if (email.endsWith("@admin.com")) {
+        console.log("Admin detected, redirecting to /admin");
         navigate("/admin");
       } else {
+        console.log("Resident detected, redirecting to /resident");
         navigate("/resident");
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || "Invalid credentials");
+      console.error("Login error:", error.response?.data || error.message);
+  
+      toast.error(
+        error.response?.data?.detail || "Invalid credentials. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }

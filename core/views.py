@@ -5,6 +5,11 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .models import MaintenanceRequest, Resident
 from .serializers import MaintenanceRequestSerializer
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
+
+from django.contrib.auth import authenticate
+
 from .models import (
     Resident, MaintenanceRequest, Payment, Amenity, AmenityBooking,
     ParkingSpot, VisitorParking, Document, ForumPost, ForumComment,
@@ -44,16 +49,20 @@ class MaintenanceRequestViewSet(viewsets.ModelViewSet):
         resident = get_object_or_404(Resident, user=self.request.user)
         serializer.save(resident=resident)
 
-    @action(detail=True, methods=['post'])
-    def update_status(self, request, pk=None):
-        maintenance_request = self.get_object()
-        status = request.data.get('status')
-        if status in dict(MaintenanceRequest.STATUS_CHOICES):
-            maintenance_request.status = status
-            maintenance_request.save()
-            serializer = self.get_serializer(maintenance_request)
-            return Response(serializer.data)
-        return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
+from rest_framework import status
+
+@action(detail=True, methods=['post'])
+def update_status(self, request, pk=None):
+    maintenance_request = self.get_object()
+    status_value = request.data.get('status')
+
+    if status_value in dict(MaintenanceRequest.STATUS_CHOICES):
+        maintenance_request.status = status_value
+        maintenance_request.save()
+        serializer = self.get_serializer(maintenance_request)
+        return Response(serializer.data)
+
+    return Response({"error": "Invalid status"}, status=status.HTTP_400_BAD_REQUEST) 
 
 class PaymentViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentSerializer
@@ -116,3 +125,20 @@ class StaffViewSet(viewsets.ModelViewSet):
     queryset = Staff.objects.all()
     serializer_class = StaffSerializer
     permission_classes = [IsAuthenticated]
+
+class CustomAuthToken(ObtainAuthToken):
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        password = request.data.get("password")
+        
+        user = authenticate(username=email, password=password)  # Now using email
+        if user:
+            token, _ = Token.objects.get_or_create(user=user)
+            return Response({"token": token.key})
+        
+        return Response({"error": "Invalid credentials"}, status=400)
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .serializers import CustomTokenObtainPairSerializer
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer

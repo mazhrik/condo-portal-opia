@@ -8,6 +8,11 @@ from .views import (
     ForumCommentViewSet, EmergencyContactViewSet, StaffViewSet,
     AnnouncementViewSet
 )
+from .views import CustomTokenObtainPairView
+from rest_framework_simplejwt.views import TokenRefreshView
+from django.urls import path, include
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
 
 router = DefaultRouter()
 router.register(r'residents', ResidentViewSet)
@@ -24,11 +29,8 @@ router.register(r'forum-comments', ForumCommentViewSet)
 router.register(r'emergency-contacts', EmergencyContactViewSet)
 router.register(r'staff', StaffViewSet)
 
-from django.urls import path, include
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-
 urlpatterns = [
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),  # Login to get token
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Refresh token
+    path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('', include(router.urls)),  # Include your API endpoints
 ]
