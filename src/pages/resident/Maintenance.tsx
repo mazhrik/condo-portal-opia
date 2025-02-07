@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,16 +15,28 @@ const Maintenance = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Fetch maintenance requests
   const { data: requests, isLoading } = useQuery({
     queryKey: ['maintenance-requests'],
-    queryFn: getMaintenanceRequests
+    queryFn: async () => {
+      try {
+        return await getMaintenanceRequests();
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch maintenance requests",
+          variant: "destructive",
+        });
+        throw error;
+      }
+    }
   });
-
   const createMutation = useMutation({
-    mutationFn: createMaintenanceRequest,
+    mutationFn: createMaintenanceRequest, // Now TypeScript knows it expects an object
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['maintenance-requests'] });
+      queryClient.invalidateQueries({ queryKey: ["maintenance-requests"] });
       setIsDialogOpen(false);
       setTitle("");
       setDescription("");
@@ -34,25 +45,26 @@ const Maintenance = () => {
         description: "Maintenance request submitted successfully",
       });
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to submit maintenance request",
+        description: error.message || "Failed to submit maintenance request",
         variant: "destructive",
       });
     },
   });
+  
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     createMutation.mutate({
       title,
       description,
-      status: 'pending',
-      priority: 'medium'
+      status: "pending",
+      priority: "medium",
     });
   };
-
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-background/50 p-8">
       <div className="fixed inset-0 -z-10">
@@ -109,8 +121,8 @@ const Maintenance = () => {
                             required
                             className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
                           />
-                          <Button type="submit" className="w-full btn-gradient">
-                            Submit Request
+                          <Button type="submit" className="w-full btn-gradient" disabled={isSubmitting}>
+                            {isSubmitting ? "Submitting..." : "Submit Request"}
                           </Button>
                         </form>
                       </DialogContent>

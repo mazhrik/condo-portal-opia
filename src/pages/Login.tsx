@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook, FaApple } from "react-icons/fa";
 import { Eye, EyeOff } from "lucide-react";
-
+import api from "@/utils/api";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,20 +19,31 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+  
     try {
+      // First, try Supabase login
       const { user } = await signInWithEmail(email, password);
+  
+      // If Supabase login is successful, also log into Django
+      const response = await api.post("/api/token/", { username: email, password });
+  
+      localStorage.setItem("accessToken", response.data.access); // Store access token
+      localStorage.setItem("refreshToken", response.data.refresh); // Store refresh token (if needed)
+  
+      toast.success("Successfully logged in!");
+      
       if (user?.email?.endsWith("@admin.com")) {
         navigate("/admin");
       } else {
         navigate("/resident");
       }
-      toast.success("Successfully logged in!");
     } catch (error: any) {
-      toast.error(error.message || "Invalid credentials");
+      toast.error(error.response?.data?.detail || "Invalid credentials");
     } finally {
       setIsLoading(false);
     }
   };
+  
 
   const handleGoogleLogin = async () => {
     try {

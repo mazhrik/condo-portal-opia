@@ -1,21 +1,46 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.example.com';
+import axios from "axios";
 
 const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: "http://127.0.0.1:8000/api/", // Adjust if needed
 });
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+export default api;
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response && error.response.status === 401) {
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (refreshToken) {
+        try {
+          const res = await axios.post("http://127.0.0.1:8000/api/token/refresh/", {
+            refresh: refreshToken,
+          });
+          localStorage.setItem("accessToken", res.data.access);
+          error.config.headers.Authorization = `Bearer ${res.data.access}`;
+          return api(error.config);
+        } catch (refreshError) {
+          console.error("Refresh token expired. Please log in again.");
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+        }
+      }
+    }
+    return Promise.reject(error);
   }
-  return config;
-});
+);
+
 
 // Auth endpoints
 export const login = async (email: string, password: string) => {
@@ -77,14 +102,35 @@ export const getMaintenanceRequests = async () => {
   }
 };
 
-export const createMaintenanceRequest = async (data: any) => {
-  try {
-    const response = await api.post('/maintenance-requests/', data);
-    return response.data;
-  } catch (error) {
-    console.error('Error creating maintenance request:', error);
-    throw error;
+export const createMaintenanceRequest = async (data: {  
+  title: string;  
+  description: string;  
+  status: string;  
+  priority: string;  
+}) => {  
+  const token = localStorage.getItem("accessToken"); // Retrieve token from storage
+
+  if (!token) {
+    throw new Error("No authentication token found. Please log in.");
   }
+
+  try {  
+    const response = await api.post("/api/maintenance-requests/", data, {  
+      headers: {  
+        Authorization: `Bearer ${token}`,  
+        "Content-Type": "application/json",
+      },  
+    });  
+    return response.data;  
+  } catch (error: any) {  
+    if (error.response) {
+      console.error("API Error:", error.response.data);
+      throw new Error(error.response.data.detail || "Something went wrong.");
+    } else {
+      console.error("Request Error:", error.message);
+      throw new Error("Failed to connect to the server.");
+    }
+  }  
 };
 
 export const updateMaintenanceRequest = async (id: number, data: any) => {
@@ -208,4 +254,3 @@ export const requestVisitorPass = async (data: any) => {
   return response.data;
 };
 
-export default api;

@@ -24,6 +24,11 @@ router.register(r'forum-comments', ForumCommentViewSet)
 router.register(r'emergency-contacts', EmergencyContactViewSet)
 router.register(r'staff', StaffViewSet)
 
+from django.urls import path, include
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
 urlpatterns = [
-    path('', include(router.urls)),
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),  # Login to get token
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Refresh token
+    path('', include(router.urls)),  # Include your API endpoints
 ]
