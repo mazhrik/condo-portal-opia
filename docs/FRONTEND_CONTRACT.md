@@ -1,4 +1,4 @@
-# Frontend Contract (Phase 1 Active)
+# Frontend Contract (Phase 2 Active)
 
 ## Tech Stack
 - React + Vite + TypeScript
@@ -6,31 +6,46 @@
 - axios
 - @tanstack/react-query
 
-## Phase 1 Routes
-- /dashboard (protected)
-- /announcements (protected)
-- /announcements/:id (protected)
+## Phase 2 Routes and Screens
+Resident
+- /maintenance/new (create request form)
+- /maintenance (my requests list)
+- /maintenance/:id (request detail)
+
+Staff/Admin
+- /maintenance/all (all requests list)
+- /maintenance/:id (request detail with status + assign UI)
 
 ## Data Fetching Patterns
 - Use react-query for all network calls.
 - Cache keys:
-  - `announcements:list`
-  - `announcements:detail:{id}`
-  - `dashboard:summary`
-- Announcements list default filter `is_active=true` for residents.
-- Admin/Manager screens may toggle `is_active=false` for management views.
+  - `maintenance:list:mine`
+  - `maintenance:list:all`
+  - `maintenance:detail:{id}`
+- List views support filters for status, priority, assigned_to, created_from/to (staff/admin only).
+
+## UI Components
+Resident
+- Create Request form (title, description, priority)
+- My Requests list (status, priority, updated_at)
+- Request detail (status history placeholder, assigned staff, completion notes)
+
+Staff/Admin
+- All Requests list with filters
+- Request detail with status transition controls
+- Assign staff dropdown
 
 ## Error and Loading States
-- List and detail pages show skeleton/loading state while fetching.
-- Errors render a standard inline error banner with retry button.
-- Dashboard widgets handle partial failures (render available widgets, show error state per widget).
+- Lists show skeleton while loading and empty-state when no results.
+- Form submission shows inline validation errors and retry.
+- Detail view shows 403/404 friendly state if unauthorized or missing.
 
 ## Role-aware UI
-- Admin/Manager: show create/edit/deactivate controls for announcements.
-- Resident: read-only announcements views.
+- Resident cannot see admin controls or all-requests list.
+- Staff/Admin sees assign + status controls.
 
 ## FUTURE PHASE — DO NOT IMPLEMENT
-- File uploads
+- File uploads/photos
 - Notifications
 - Payments
-- Audit logs
+- Vendor marketplace

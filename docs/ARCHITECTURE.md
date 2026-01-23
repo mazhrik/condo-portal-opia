@@ -5,26 +5,23 @@
 - Backend: Django + DRF + SimpleJWT + dj-rest-auth + allauth.
 - API base: /api/ (Django)
 
-## Phase 1 Entities
-- Announcement
-  - Fields: title, content, is_active, created_at, updated_at
-  - Visibility: all authenticated users can read active announcements
-  - Management: Admin/Manager can create/update/deactivate
+## Phase 2 Entities
+- MaintenanceRequest
+  - Fields: resident_id, title, description, status, priority, assigned_to, completion_notes, created_at, updated_at
+  - Status workflow: new → in_review → assigned → in_progress → completed → closed
+  - Visibility: resident sees own; staff/admin sees all
 
-## Relationships and Access
-- Residents can read announcements and dashboard summary.
-- Managers/Admins can create/update/deactivate announcements.
+## Relationships and Indexes (Minimal)
+- MaintenanceRequest.resident_id → Resident
+- MaintenanceRequest.assigned_to → Staff (nullable)
+- Recommended indexes: resident_id, status, assigned_to, updated_at
 
 ## Auth Configuration (Phase 0 Completed)
 - JWT auth enabled via DRF DEFAULT_AUTHENTICATION_CLASSES.
 - DEFAULT_PERMISSION_CLASSES = IsAuthenticated.
-- SimpleJWT access/refresh rotation with 60m/1d lifetimes.
-
-## Observability & Health
-- /api/health returns { status: "ok" }.
 
 ## FUTURE PHASE — DO NOT IMPLEMENT
-- File uploads
+- File uploads/photos
 - Notifications
 - Payments
-- Audit logs
+- Vendor marketplace

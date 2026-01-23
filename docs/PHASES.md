@@ -44,6 +44,7 @@ Included
 
 Excluded
 - Directory and buildings/units.
+- File uploads/photos, notifications, payments, vendor marketplace (FUTURE PHASE — DO NOT IMPLEMENT).
 
 Exit Criteria
 - Status transitions are enforced and role-gated.
@@ -67,8 +68,8 @@ Objective
 - Expand platform capabilities after core phases are stable.
 
 Included
-- FUTURE PHASE — DO NOT IMPLEMENT: File uploads, notifications, payments, audit logs.
-- FUTURE PHASE — DO NOT IMPLEMENT: Analytics and advanced integrations.
+- FUTURE PHASE — DO NOT IMPLEMENT: File uploads/photos, notifications, payments, audit logs.
+- FUTURE PHASE — DO NOT IMPLEMENT: Vendor marketplace, analytics and advanced integrations.
 
 Exit Criteria
 - Defined when Phase 4 is explicitly activated.

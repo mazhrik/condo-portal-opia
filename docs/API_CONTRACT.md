@@ -1,4 +1,4 @@
-# API Contract (Phase 1 Active)
+# API Contract (Phase 2 Active)
 
 Base URL
 - /api
@@ -29,16 +29,26 @@ Pagination
 
 ---
 
-## Phase 1 Endpoints (ACTIVE)
+## Phase 2 Endpoints (ACTIVE)
 
-### Announcements
+### Maintenance Requests
 Permissions
-- Resident: read only
-- Admin/Manager: CRUD
+- Resident: create + view own
+- Manager/Admin: list + view all + manage
 
-#### GET /api/announcements/
-Query params
-- `is_active` (bool, optional; default true)
+Status values
+- `new`, `in_review`, `assigned`, `in_progress`, `completed`, `closed`
+
+Allowed transitions
+- new → in_review → assigned → in_progress → completed → closed
+- any → closed (Admin only)
+
+#### GET /api/maintenance-requests/
+Filtering (Manager/Admin only)
+- `status`, `priority`, `assigned_to`, `resident_id`, `created_from`, `created_to`, `q`
+
+Resident behavior
+- Returns only requests for the authenticated resident; ignores `resident_id`.
 
 Response 200
 ```
@@ -48,10 +58,14 @@ Response 200
   "previous": null,
   "results": [
     {
-      "id": 10,
-      "title": "Pool Closure",
-      "content": "...",
-      "is_active": true,
+      "id": 42,
+      "resident": 12,
+      "title": "Leaky faucet",
+      "description": "...",
+      "status": "new",
+      "priority": "medium",
+      "assigned_to": null,
+      "completion_notes": null,
       "created_at": "2026-01-23T00:00:00Z",
       "updated_at": "2026-01-23T00:00:00Z"
     }
@@ -59,81 +73,72 @@ Response 200
 }
 ```
 
-#### GET /api/announcements/{id}/
-Response 200
-```
-{
-  "id": 10,
-  "title": "Pool Closure",
-  "content": "...",
-  "is_active": true,
-  "created_at": "2026-01-23T00:00:00Z",
-  "updated_at": "2026-01-23T00:00:00Z"
-}
-```
-
-#### POST /api/announcements/ (Admin/Manager)
+#### POST /api/maintenance-requests/ (Resident)
 Request
 ```
-{ "title": "...", "content": "...", "is_active": true }
+{ "title": "...", "description": "...", "priority": "high" }
 ```
 Response 201
 ```
 {
-  "id": 11,
+  "id": 43,
+  "resident": 12,
   "title": "...",
-  "content": "...",
-  "is_active": true,
+  "description": "...",
+  "status": "new",
+  "priority": "high",
+  "assigned_to": null,
+  "completion_notes": null,
   "created_at": "2026-01-23T00:00:00Z",
   "updated_at": "2026-01-23T00:00:00Z"
 }
 ```
 
-#### PATCH /api/announcements/{id}/ (Admin/Manager)
+#### GET /api/maintenance-requests/{id}/
+- Resident can only access own request.
+- Manager/Admin can access any request.
+
+#### PATCH /api/maintenance-requests/{id}/ (Manager/Admin)
+Rules
+- Status must follow allowed transitions.
+- `assigned_to` must reference a staff user.
+- `completion_notes` required when setting status to `completed`.
+
 Request
 ```
-{ "title": "...", "content": "...", "is_active": false }
+{ "status": "assigned", "assigned_to": 3 }
 ```
+
 Response 200
 ```
 {
-  "id": 11,
-  "title": "...",
-  "content": "...",
-  "is_active": false,
-  "created_at": "2026-01-23T00:00:00Z",
+  "id": 42,
+  "status": "assigned",
+  "assigned_to": 3,
+  "completion_notes": null,
   "updated_at": "2026-01-23T00:00:00Z"
 }
 ```
 
-#### DELETE /api/announcements/{id}/ (Admin/Manager)
-Response 204
-
-### Dashboard Summary
-Permissions
-- Resident, Manager, Admin: read
-
-#### GET /api/dashboard/summary
-Response 200
+Error example (invalid transition) 400
 ```
 {
-  "announcements": {
-    "active_count": 12,
-    "latest": [
-      {
-        "id": 10,
-        "title": "Pool Closure",
-        "created_at": "2026-01-23T00:00:00Z"
-      }
-    ]
+  "error": {
+    "code": "invalid_transition",
+    "message": "Cannot transition from new to completed.",
+    "details": { "from": "new", "to": "completed" }
   }
 }
 ```
 
+Comments/Notes (Phase 2)
+- Only `completion_notes` is supported.
+- No threaded comments or attachments in Phase 2.
+
 ---
 
 FUTURE PHASE — DO NOT IMPLEMENT
-- File uploads
+- File uploads/photos
 - Notifications
 - Payments
-- Audit logs
+- Vendor marketplace
