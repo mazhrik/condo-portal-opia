@@ -13,7 +13,7 @@ Notes:
 
 Date: 2026-01-23
 Phase: 1
-Branch + commit hash: main @ TBD
+Branch + commit hash: main @ 4a6329a
 Endpoints implemented:
 - GET /api/announcements/
 - GET /api/announcements/{id}/
