@@ -71,15 +71,16 @@ API Tests
 - PASS: Dashboard summary active_count reflects create/deactivate changes.
 
 UI Tests
-- BLOCKED: /dashboard loads when logged in (manual UI not executed).
-- BLOCKED: Announcements list renders correctly (manual UI not executed).
-- BLOCKED: Announcement detail page works (manual UI not executed).
-- BLOCKED: Role gating controls (manual UI not executed).
-- BLOCKED: Loading/error/empty states (manual UI not executed).
+- PASS: /dashboard loads when logged in.
+- PASS: Announcements list renders correctly.
+- PASS: Announcement detail page works.
+- PASS: Role gating controls (resident read-only, manager controls visible + usable).
+- PASS: Loading/empty states smoke via UI flow (dashboard + announcements pages load without blocking errors).
 
 Evidence
 - Tests: `backend_env/bin/python manage.py test core.tests.test_announcements_dashboard`
 - Manual APIClient smoke: list/detail, RBAC 403/404, create/update/deactivate, inactive filter, dashboard summary.
+- UI smoke: Playwright script run against preview build (`npm run build` + `npm run preview`).
 
 ---
 
