@@ -1,104 +1,202 @@
 # API Contract
 
-Base URL: `/api`
+Base URL
+- /api
 
-## Conventions (Phase 0)
-- **Auth header:** `Authorization: Bearer <access_token>`
-- **Content-Type:** `application/json`
-- **Error shape:**
-  - Auth errors: `{ "detail": "..." }`
-  - Validation errors: `{ "field": ["error message"] }`
-- **Pagination:** Not currently configured in settings. Phase 0 requires standardizing on limit/offset pagination (planned), documented here for implementation.
-  - Response: `{ "count": number, "next": string | null, "previous": string | null, "results": [...] }`
-  - Query params: `?limit=<int>&offset=<int>`
+Auth
+- Authorization header: `Authorization: Bearer <access_token>`
+- Access token obtained via POST /api/token/
+- Refresh via POST /api/token/refresh/
 
----
-
-# Phase 0 — Auth & RBAC (ACTIVE)
-## Auth Endpoints (Confirmed in URLs)
-### POST `/api/token/`
-- **Purpose:** Obtain access + refresh JWTs.
-- **Request Body:**
-  ```json
-  { "email": "user@example.com", "password": "..." }
-  ```
-- **Response 200:**
-  ```json
-  { "refresh": "<refresh_token>", "access": "<access_token>" }
-  ```
-- **Notes:** Custom token serializer adds `email` claim to JWT payload.
-
-### POST `/api/token/refresh/`
-- **Purpose:** Refresh access token.
-- **Request Body:**
-  ```json
-  { "refresh": "<refresh_token>" }
-  ```
-- **Response 200:**
-  ```json
-  { "access": "<access_token>" }
-  ```
-
-### POST `/api/me` (Planned)
-- **Purpose:** Return authenticated user identity and role.
-- **Response 200:**
-  ```json
-  {
-    "id": 123,
-    "email": "user@example.com",
-    "first_name": "...",
-    "last_name": "...",
-    "role": "admin|property_manager|resident"
+Error Shape (Phase 0 standard)
+```
+{
+  "error": {
+    "code": "string",
+    "message": "string",
+    "details": {}
   }
-  ```
+}
+```
 
-### dj-rest-auth Endpoints
-- **Status:** `dj_rest_auth` is installed but **not wired in URLs**. Do not implement its endpoints until explicitly added to `urls.py`.
-
-## RBAC Sample Endpoints (Existing)
-These endpoints are in the router and require authentication by default.
-- `GET /api/announcements/`
-- `GET /api/maintenance-requests/`
-- `GET /api/residents/`
-
----
-
-# Phase 1 — Announcements
-### GET `/api/announcements/`
-- **Purpose:** List active announcements.
-- **Permissions:** All roles (Admin/Property Manager/Resident).
-
-### POST `/api/announcements/`
-- **Purpose:** Create announcement.
-- **Permissions:** Admin/Property Manager only.
-
-### PATCH `/api/announcements/{id}/`
-- **Purpose:** Update or deactivate (set `is_active=false`).
-- **Permissions:** Admin/Property Manager only.
+Pagination (Phase 0 standard)
+- List endpoints should return:
+```
+{
+  "count": 123,
+  "next": "<url or null>",
+  "previous": "<url or null>",
+  "results": [ ... ]
+}
+```
 
 ---
 
-# Phase 2 — Maintenance Requests
-### GET `/api/maintenance-requests/`
-- **Purpose:** List maintenance requests.
-- **Permissions:**
-  - Admin/Property Manager: see all.
-  - Resident: see own requests only.
+## Phase 0 Endpoints (ACTIVE)
 
-### POST `/api/maintenance-requests/`
-- **Purpose:** Create a maintenance request.
-- **Permissions:** Admin/Property Manager/Resident.
+### POST /api/token/
+Request
+```
+{
+  "email": "user@example.com",
+  "password": "string"
+}
+```
+Response 200
+```
+{
+  "access": "jwt",
+  "refresh": "jwt",
+  "user_id": 1,
+  "email": "user@example.com",
+  "first_name": "Jane",
+  "last_name": "Doe",
+  "is_staff": false,
+  "is_superuser": false
+}
+```
 
-### PATCH `/api/maintenance-requests/{id}/`
-- **Purpose:** Update status/assignment.
-- **Permissions:** Admin/Property Manager only.
+### POST /api/token/refresh/
+Request
+```
+{ "refresh": "jwt" }
+```
+Response 200
+```
+{ "access": "jwt" }
+```
+
+### GET /api/me
+Auth required.
+Response 200
+```
+{
+  "id": 1,
+  "email": "user@example.com",
+  "first_name": "Jane",
+  "last_name": "Doe",
+  "role": "resident",
+  "resident": {
+    "id": 12,
+    "unit_number": "A-203",
+    "phone_number": "555-0101",
+    "move_in_date": "2024-01-15"
+  },
+  "staff": null
+}
+```
+Role values: `admin` | `manager` | `resident`.
+
+### GET /api/health
+Response 200
+```
+{ "status": "ok" }
+```
 
 ---
 
-# Phase 3 — Buildings/Units/Directory (Stub)
-- **Endpoints TBD** (to be defined when Phase 3 becomes active).
+## Phase 1 Endpoints (Announcements)
+
+### GET /api/announcements/
+Query params
+- `is_active` (bool, optional; default true)
+
+Response 200
+```
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 10,
+      "title": "Pool Closure",
+      "content": "...",
+      "is_active": true,
+      "created_at": "2026-01-23T00:00:00Z",
+      "updated_at": "2026-01-23T00:00:00Z"
+    }
+  ]
+}
+```
+
+### GET /api/announcements/{id}/
+Response 200
+```
+{
+  "id": 10,
+  "title": "Pool Closure",
+  "content": "...",
+  "is_active": true,
+  "created_at": "2026-01-23T00:00:00Z",
+  "updated_at": "2026-01-23T00:00:00Z"
+}
+```
+
+### POST /api/announcements/ (Admin/Manager)
+Request
+```
+{ "title": "...", "content": "...", "is_active": true }
+```
+
+### PATCH /api/announcements/{id}/ (Admin/Manager)
+Request
+```
+{ "title": "...", "content": "...", "is_active": false }
+```
 
 ---
 
-# Phase 4 — Enhancements (FUTURE PHASE — DO NOT IMPLEMENT YET)
-- Uploads, payments, notifications, audit logs, analytics endpoints to be defined in future.
+## Phase 2 Endpoints (Maintenance)
+
+### GET /api/maintenance-requests/
+- Residents: only own requests.
+- Admin/Manager: all requests.
+
+Response item
+```
+{
+  "id": 5,
+  "resident": 12,
+  "title": "Leaky faucet",
+  "description": "...",
+  "status": "pending",
+  "priority": "medium",
+  "assigned_to": 3,
+  "completion_notes": null,
+  "created_at": "2026-01-23T00:00:00Z",
+  "updated_at": "2026-01-23T00:00:00Z"
+}
+```
+
+### POST /api/maintenance-requests/ (Resident)
+Request
+```
+{ "title": "...", "description": "...", "priority": "high" }
+```
+
+### PATCH /api/maintenance-requests/{id}/ (Admin/Manager)
+Request
+```
+{ "status": "in_progress", "assigned_to": 3, "completion_notes": "..." }
+```
+
+---
+
+## Phase 3 Endpoints (Directory)
+
+### GET /api/buildings/ (Admin/Manager)
+### POST /api/buildings/ (Admin/Manager)
+### GET /api/units/ (Admin/Manager)
+### POST /api/units/ (Admin/Manager)
+### GET /api/directory/ (Role-gated)
+
+Response item (directory)
+```
+{
+  "resident_id": 12,
+  "full_name": "Jane Doe",
+  "unit_number": "A-203",
+  "email": "masked-or-full-based-on-role"
+}
+```

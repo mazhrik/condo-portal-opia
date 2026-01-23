@@ -1,36 +1,47 @@
 # Architecture
 
-## High-Level Design
-- **Frontend:** Vite + React + TypeScript using react-router-dom, axios, and @tanstack/react-query.
-- **Backend:** Django + DRF with SimpleJWT authentication. Default authentication and permission classes require JWT and authenticated access for API endpoints.
-- **Auth Integration:** SPA uses JWTs for authenticated API calls. Backend issues JWTs via `/api/token/` and refreshes via `/api/token/refresh/`.
+## System Overview
+- Frontend: React + Vite + TypeScript, react-router-dom, axios, @tanstack/react-query.
+- Backend: Django + DRF + SimpleJWT + dj-rest-auth + allauth.
+- API base: /api/ (Django)
 
-## Entity Overview (Phases 1–3)
-### Phase 1 — Announcements
-- **Announcement**: title, content, created_at, updated_at, is_active.
+## Current Auth Configuration (Verified)
+- JWT auth enabled via DRF DEFAULT_AUTHENTICATION_CLASSES.
+- DEFAULT_PERMISSION_CLASSES = IsAuthenticated (all endpoints require auth unless explicitly overridden).
+- SimpleJWT settings: access 60 min, refresh 1 day, rotate refresh tokens, blacklist after rotation.
+- Auth endpoints exposed in core urls:
+  - POST /api/token/ (CustomTokenObtainPairView)
+  - POST /api/token/refresh/
+- CustomTokenObtainPairSerializer extends TokenObtainPairSerializer and adds email claim plus user fields in response.
 
-### Phase 2 — Maintenance Requests
-- **MaintenanceRequest**: resident, title, description, status, priority, assigned_to (staff), completion_notes, timestamps.
-- **Resident**: user, unit_number, phone_number, move_in_date.
-- **Staff**: user, position, department, hire_date.
+Notes
+- Token blacklist app is not currently installed. If refresh rotation + blacklist is required, add rest_framework_simplejwt.token_blacklist and migrate.
+- dj-rest-auth and allauth are installed but not currently wired to URLs.
 
-### Phase 3 — Buildings/Units/Directory (Planned)
-- **Building** (planned): name, address, metadata.
-- **Unit** (planned): building, unit_number, occupancy status.
-- **DirectoryEntry** (planned): resident profile details with role-gated visibility.
+## Data Model (Phase 0 relevant)
+- User (Django auth)
+- Resident profile (one-to-one User)
+- Staff profile (one-to-one User)
+- Roles are derived from profiles + is_superuser/is_staff.
 
-## Auth Approach (Current Config)
-- **Backend:** DRF SimpleJWT with `JWTAuthentication` and `IsAuthenticated` configured as defaults.
-- **JWT Claims:** Custom token serializer includes user email in the JWT payload.
-- **SPA:** Uses access token for API calls and refresh token for renewing access (see Frontend Contract).
+## Request Flow
+1. SPA calls POST /api/token/ with email + password.
+2. Backend returns access + refresh tokens and user identity fields.
+3. SPA stores refresh token (durable) and keeps access token in memory.
+4. SPA calls /api/me to hydrate profile and role.
+5. Access token is attached as Authorization: Bearer <token>.
+6. On 401 due to expiry, SPA calls /api/token/refresh/ and retries once.
 
-## Risks & Mitigations
-1. **Token Storage Risk**
-   - **Risk:** Storing tokens in localStorage exposes them to XSS.
-   - **Mitigation:** Keep access tokens in memory, store refresh token in localStorage only, enforce Content Security Policy, and minimize token lifetime.
-2. **CSRF Risk (if cookies used in future)**
-   - **Risk:** If cookie-based auth is introduced later, CSRF protection must be enforced.
-   - **Mitigation:** Keep JWTs in Authorization headers for Phase 0; revisit if switching to cookies.
-3. **CORS Misconfiguration**
-   - **Risk:** Frontend origin not allowed causes auth failures.
-   - **Mitigation:** Maintain explicit Vite dev origin allowlist and verify in QA.
+## RBAC Policy
+- Admin: is_superuser or is_staff (full access).
+- Property Manager: Staff profile (privileged access, limited by feature).
+- Resident: Resident profile (self-only access to resident-scoped resources).
+
+## Observability & Health
+- /api/health returns { status: "ok" } for uptime checks.
+
+## Security Decisions (Phase 0)
+- Access token lives in memory only.
+- Refresh token stored in localStorage (single source of truth for rehydration).
+- Logout clears both tokens and invalidates local session.
+

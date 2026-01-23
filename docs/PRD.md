@@ -1,108 +1,94 @@
 # Product Requirements Document (PRD)
 
 ## Overview
-This PRD is organized by phase. Each phase is independently releasable, and only the **ACTIVE PHASE** may be implemented.
+This PRD defines the source-of-truth requirements for a phased rollout. Only the ACTIVE PHASE may be implemented. Every feature is mapped to a phase.
 
 ## Goals
-- Provide a secure JWT-authenticated experience with clear role-based access controls.
-- Deliver features incrementally with explicit contracts for Backend, Frontend, and QA.
-- Ensure each phase has verifiable exit criteria.
+- Secure JWT authentication with a clear RBAC model.
+- Incremental delivery with explicit API and frontend contracts.
+- Phase-by-phase acceptance criteria with measurable exit criteria.
 
 ## Non-Goals
-- Any Phase 4 feature work (uploads, payments, notifications, audit logs, analytics).
-- Cross-phase functionality that is not explicitly listed as included.
+- Implementing any FUTURE PHASE items before activation.
+- Cross-phase feature creep.
 
-## Roles & Permissions Matrix (Phase 0 Baseline)
-Current data model uses Django `User` plus `Resident` and `Staff` profiles. Roles are defined as:
-- **Admin**: Django superuser/staff with elevated privileges.
-- **Property Manager**: User with a `Staff` profile.
-- **Resident**: User with a `Resident` profile.
+## Roles and RBAC Baseline (Phase 0)
+Roles are derived from Django User + profile relationships:
+- Admin: `is_superuser` or `is_staff` with elevated privileges.
+- Property Manager: user with a `Staff` profile.
+- Resident: user with a `Resident` profile.
 
-| Capability | Admin | Property Manager | Resident |
-| --- | --- | --- | --- |
-| Log in / Refresh / Logout | ✅ | ✅ | ✅ |
-| View `/api/me` | ✅ | ✅ | ✅ |
-| Announcements (read) | ✅ | ✅ | ✅ |
-| Announcements (create/update/deactivate) | ✅ | ✅ | ❌ |
-| Maintenance requests (read all) | ✅ | ✅ | ❌ |
-| Maintenance requests (read own) | ✅ | ✅ | ✅ |
-| Maintenance requests (create) | ✅ | ✅ | ✅ |
-| Resident directory | ✅ | ✅ | ❌ |
-
-> Backend/Frontend must implement permission enforcement matching this matrix during Phase 0 (for auth) and in later phases when features activate.
+Permission matrix (minimum baseline):
+- Auth: all roles can login/refresh/logout.
+- /api/me: all authenticated users.
+- Announcements: read (all roles), write (Admin/Manager only).
+- Maintenance: residents read/create own, staff/admin read all and update.
+- Directory: admin/manager only (resident visibility controlled in Phase 3).
 
 ---
 
-# Phase 0 — Foundation & Auth Hardening (ACTIVE)
-### Goals
-- Standardize JWT auth endpoints and SPA token handling.
-- Provide a canonical `/api/me` endpoint for the frontend.
-- Define API conventions for error shapes, pagination, and filtering.
+# Phase 0 — JWT Auth Hardening + RBAC + /api/me + Health + Protected Routes (ACTIVE)
+## Goals
+- Confirm JWT settings and endpoints used by the SPA.
+- Standardize the auth flow and error handling.
+- Establish /api/me and /api/health.
+- Implement protected routes in the frontend.
 
-### Non-Goals
-- Implement Phase 1–4 features.
-
-### User Stories & Acceptance Criteria
-1. **As a user, I can log in via JWT and receive access + refresh tokens.**
-   - **AC1:** POST `/api/token/` with email + password returns `access` and `refresh` tokens.
-   - **AC2:** JWT `access` token contains `email` claim (custom serializer).
-2. **As a user, I can refresh tokens without re-authenticating.**
-   - **AC1:** POST `/api/token/refresh/` with a valid refresh token returns a new access token.
-   - **AC2:** Invalid/expired refresh token returns `401 Unauthorized` with standard error shape.
-3. **As a user, I can log out and clear tokens.**
-   - **AC1:** Frontend clears stored tokens and redirects to login.
-   - **AC2:** Authenticated routes are inaccessible after logout.
-4. **As a user, I can load my profile and role from `/api/me`.**
-   - **AC1:** Authenticated request returns user identity + role.
-   - **AC2:** Unauthorized request returns `401 Unauthorized`.
+## User Stories and Acceptance Criteria
+1. As a user, I can log in with email and password.
+   - AC1: POST /api/token/ returns access and refresh tokens.
+   - AC2: Response includes user_id, email, first_name, last_name, is_staff, is_superuser.
+2. As a user, I can refresh my session.
+   - AC1: POST /api/token/refresh/ returns a new access token.
+   - AC2: Invalid refresh returns 401 with the standard error shape.
+3. As a user, I can log out.
+   - AC1: Frontend clears tokens and user state.
+   - AC2: Protected routes redirect to login after logout.
+4. As a user, I can load my profile and role via /api/me.
+   - AC1: Returns user + role + profile data.
+   - AC2: Unauthorized requests return 401.
+5. As an operator, I can check service health.
+   - AC1: GET /api/health returns { status: "ok" } with 200.
 
 ---
 
-# Phase 1 — Announcements & Dashboard
-### Goals
-- Provide announcement list/detail and a lightweight dashboard.
+# Phase 1 — Announcements + Dashboard
+## Goals
+- Deliver announcements and a lightweight dashboard.
 
-### Non-Goals
-- Maintenance requests or resident directory.
-
-### User Stories & Acceptance Criteria
-1. **As a resident, I can view announcements.**
-   - **AC1:** GET announcements list returns only active announcements.
-   - **AC2:** Detail endpoint returns full content.
-2. **As an admin/manager, I can create and manage announcements.**
-   - **AC1:** Create, update, deactivate endpoints are role-gated (Admin/Manager only).
+## User Stories and Acceptance Criteria
+1. As a resident, I can view active announcements.
+   - AC1: List returns only active announcements by default.
+   - AC2: Detail returns full content and metadata.
+2. As an admin/manager, I can manage announcements.
+   - AC1: Create/update/deactivate is RBAC-gated.
 
 ---
 
 # Phase 2 — Maintenance Requests
-### Goals
-- Enable residents to create and view maintenance requests.
-- Enable staff/admins to manage and update statuses.
+## Goals
+- Enable maintenance request lifecycle.
 
-### User Stories & Acceptance Criteria
-1. **As a resident, I can submit a maintenance request.**
-   - **AC1:** Request is associated with my resident profile.
-   - **AC2:** I can see only my own requests.
-2. **As a manager, I can update status/assignments.**
-   - **AC1:** Status updates enforce valid transitions.
+## User Stories and Acceptance Criteria
+1. As a resident, I can create and view my requests.
+   - AC1: Requests are tied to my resident profile.
+   - AC2: I cannot view requests from other residents.
+2. As a staff/admin, I can update status and assignments.
+   - AC1: Status transitions are validated.
 
 ---
 
 # Phase 3 — Buildings/Units/Resident Directory
-### Goals
-- Manage building/unit data and resident directory views.
+## Goals
+- Implement buildings/units inventory and directory.
 
-### User Stories & Acceptance Criteria
-1. **As a manager/admin, I can manage building/unit inventory.**
-   - **AC1:** CRUD endpoints are role-gated.
-2. **As a resident, I can view permitted directory information.**
-   - **AC1:** Sensitive fields are hidden unless admin/manager.
+## User Stories and Acceptance Criteria
+1. As an admin/manager, I can CRUD buildings/units.
+   - AC1: Only admin/manager can create or edit.
+2. As a resident, I can view directory entries permitted by policy.
+   - AC1: Sensitive fields are hidden for residents.
 
 ---
 
-# Phase 4 — Enhancements (FUTURE PHASE — DO NOT IMPLEMENT YET)
-### Goals
-- Uploads, payments, notifications, audit logs, analytics.
-
-### User Stories & Acceptance Criteria
-- **FUTURE PHASE — DO NOT IMPLEMENT YET**
+# Phase 4 — Enhancements
+- FUTURE PHASE — DO NOT IMPLEMENT

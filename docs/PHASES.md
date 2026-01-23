@@ -1,108 +1,78 @@
 # Condo Portal Rollout Phases
 
-> **ACTIVE PHASE: Phase 0 — Foundation & Auth Hardening**
+> ACTIVE PHASE: Phase 0 — JWT Auth Hardening + RBAC + /api/me + Health + Protected Routes
 
-## Phase 0 — Foundation & Auth Hardening (ACTIVE)
-**Objective**
-- Confirm and standardize JWT auth flows, frontend token handling, and RBAC baseline for the existing Django + DRF API.
+## Phase 0 — JWT Auth Hardening + RBAC + /api/me + Health + Protected Routes (ACTIVE)
+Objective
+- Lock the authentication contract and role model so Frontend and Backend can implement without ambiguity.
 
-**Included**
-- Document current auth endpoints (/api/token/, /api/token/refresh/).
-- Choose and document a token storage strategy for Vite React.
-- Define login, refresh, and logout flows for the SPA.
-- Add/standardize `/api/me` endpoint (user + role) as the auth bootstrap.
-- Establish roles: Admin / Property Manager / Resident with permission matrix.
-- Define API conventions (pagination, error shape, filtering).
+Included
+- Verify and document existing SimpleJWT configuration and endpoints.
+- Standardize login/refresh/logout flows for SPA.
+- Implement /api/me (user + role) as the bootstrap endpoint.
+- Implement /api/health for uptime and readiness checks.
+- Define RBAC baseline (Admin, Property Manager, Resident).
+- Protect frontend routes and centralize auth guard behavior.
 
-**Excluded**
-- Feature work in announcements, maintenance, buildings/units, etc.
+Excluded
+- Announcements, Maintenance Requests, Directory features.
 
-**Dependencies**
-- DRF SimpleJWT configured in `REST_FRAMEWORK` defaults.
-- React app uses axios + react-router-dom + react-query.
+Exit Criteria
+- Login, refresh, and logout flows work end-to-end.
+- /api/me returns the correct role and profile data.
+- RBAC produces expected 401/403 behavior across protected endpoints.
 
-**Exit Criteria**
-- From React, a user can log in, call a protected endpoint, refresh token, log out, and role-based restrictions produce correct 401/403 behavior.
+## Phase 1 — Announcements + Dashboard
+Objective
+- Deliver announcements with a lightweight dashboard summary.
 
-**Rollout Notes**
-- Ship doc-first contract updates before implementation.
-- Backend/Frontend/QA only implement Phase 0 scope.
+Included
+- Announcements list/detail for residents.
+- Admin/Manager create/update/deactivate announcements.
+- Dashboard widgets (latest announcements, counts).
 
-## Phase 1 — Announcements & Dashboard
-**Objective**
-- Deliver announcements list/detail + lightweight dashboard.
+Excluded
+- Maintenance requests, directory, buildings/units.
 
-**Included**
-- Announcements CRUD (role-gated).
-- Dashboard summary widgets (latest announcements, counts).
-
-**Excluded**
-- Maintenance requests, units directory, payments.
-
-**Dependencies**
-- Phase 0 auth + RBAC in place.
-
-**Exit Criteria**
-- Resident sees announcements list and detail; admins/managers can create/update/deactivate.
-
-**Rollout Notes**
-- Release independently of later phases.
+Exit Criteria
+- Residents can read active announcements.
+- Admin/Manager can manage announcements.
 
 ## Phase 2 — Maintenance Requests
-**Objective**
-- Full maintenance request lifecycle.
+Objective
+- Enable maintenance request lifecycle for residents and staff.
 
-**Included**
+Included
 - Resident create/view own requests.
-- Staff/Manager update status and assignments.
+- Staff/Admin update status, assign, add completion notes.
 
-**Excluded**
-- Buildings/Units/Directory.
+Excluded
+- Directory and buildings/units.
 
-**Dependencies**
-- Phase 0 auth + RBAC.
-
-**Exit Criteria**
-- Requests can be created, viewed, updated, and status transitions enforced.
-
-**Rollout Notes**
-- Release independently once Phase 0 is stable.
+Exit Criteria
+- Status transitions are enforced and role-gated.
 
 ## Phase 3 — Buildings/Units/Resident Directory
-**Objective**
-- Manage buildings/units and directory visibility.
+Objective
+- Provide authoritative building/unit inventory and resident directory views.
 
-**Included**
-- Building/unit entities.
-- Resident directory (role-gated views).
+Included
+- Buildings and Units entities with CRUD (Admin/Manager only).
+- Resident directory with role-gated visibility.
 
-**Excluded**
+Excluded
 - Payments/Uploads/Notifications.
 
-**Dependencies**
-- Phase 0 auth + Phase 1/2 conventions.
+Exit Criteria
+- Directory data is accurate and permissions enforced.
 
-**Exit Criteria**
-- Directory is accurate; role-gated admin/manager operations.
+## Phase 4 — Enhancements
+Objective
+- Expand platform capabilities after core phases are stable.
 
-**Rollout Notes**
-- May require data migration.
+Included
+- FUTURE PHASE — DO NOT IMPLEMENT: Payments, document uploads, notifications, audit logs, analytics.
+- FUTURE PHASE — DO NOT IMPLEMENT: Advanced integrations (SMS/email, vendor portals).
 
-## Phase 4 — Enhancements (FUTURE PHASE — DO NOT IMPLEMENT YET)
-**Objective**
-- Expand platform with advanced features.
-
-**Included**
-- Uploads, payments, notifications, audit logs, analytics.
-
-**Excluded**
-- Any Phase 4 work prior to explicit activation.
-
-**Dependencies**
-- Phases 0–3 complete.
-
-**Exit Criteria**
-- Defined per feature when Phase 4 becomes active.
-
-**Rollout Notes**
-- Explicit future-only scope.
+Exit Criteria
+- Defined when Phase 4 is explicitly activated.
