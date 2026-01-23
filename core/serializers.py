@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from .models import (
     Resident, MaintenanceRequest, Payment, Amenity, AmenityBooking,
@@ -19,6 +20,12 @@ class ResidentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Resident
         fields = '__all__'
+
+
+class ResidentProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Resident
+        fields = ('id', 'unit_number', 'phone_number', 'move_in_date')
 
 class AnnouncementSerializer(serializers.ModelSerializer):
     class Meta:
@@ -94,6 +101,12 @@ class StaffSerializer(serializers.ModelSerializer):
         model = Staff
         fields = '__all__'
 
+
+class StaffProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Staff
+        fields = ('id', 'position', 'department', 'hire_date')
+
 class PackageSerializer(serializers.ModelSerializer):
     recipient_name = serializers.SerializerMethodField()
     unit_number = serializers.SerializerMethodField()
@@ -108,21 +121,31 @@ class PackageSerializer(serializers.ModelSerializer):
     def get_unit_number(self, obj):
         return obj.recipient.unit_number
 
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from django.contrib.auth.models import User
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        token['email'] = user.email  # Add email in JWT payload
-        return token
+    username_field = "email"
+    email = serializers.EmailField()
 
     def validate(self, attrs):
-        # Default validation
-        data = super().validate(attrs)
-        
-        # Extra custom response
+        email = attrs.get("email")
+        password = attrs.get("password")
+
+        if not email or not password:
+            raise serializers.ValidationError("Email and password are required.")
+
+        user = authenticate(username=email, password=password)
+        if not user:
+            raise AuthenticationFailed("No active account found with the given credentials")
+
+        self.user = user
+        refresh = self.get_token(self.user)
+        data = {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        }
+
         data.update({
             'user_id': self.user.id,
             'email': self.user.email,
@@ -131,8 +154,14 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'is_staff': self.user.is_staff,
             'is_superuser': self.user.is_superuser,
         })
-        
+
         return data
+
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['email'] = user.email  # Add email in JWT payload
+        return token
 
 class PollOptionSerializer(serializers.ModelSerializer):
     class Meta:

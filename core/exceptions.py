@@ -21,9 +21,17 @@ def custom_exception_handler(exc, context):
     elif isinstance(details, list) and details:
         message = details[0]
 
-    error_payload = {"message": message, "details": details}
-    if code:
-        error_payload["code"] = code
+    if code is None:
+        code = "error"
+
+    if isinstance(details, list):
+        details_payload = {"errors": details}
+    elif isinstance(details, dict):
+        details_payload = details
+    else:
+        details_payload = {}
+
+    error_payload = {"code": code, "message": message, "details": details_payload}
 
     response.data = {"error": error_payload}
     return response

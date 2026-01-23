@@ -107,6 +107,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',  # API requires authentication
     ),
+    'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler',
 }
 
 LANGUAGE_CODE = 'en-us'
@@ -175,4 +176,3 @@ SIMPLE_JWT = {
     'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
     'JTI_CLAIM': 'jti',
 }
-

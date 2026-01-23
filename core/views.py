@@ -1,7 +1,8 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from .models import MaintenanceRequest, Resident
 from .serializers import MaintenanceRequestSerializer
@@ -24,14 +25,16 @@ from .serializers import (
     ForumCommentSerializer, EmergencyContactSerializer, StaffSerializer,
     AnnouncementSerializer, PackageSerializer, PollSerializer,
     PollOptionSerializer, PollVoteSerializer, IncidentReportSerializer,
-    EventSerializer
+    EventSerializer, ResidentProfileSerializer, StaffProfileSerializer
 )
+from .permissions import IsAdminOrManager
+from .roles import get_user_role
 
 
 class ResidentViewSet(viewsets.ModelViewSet):
     queryset = Resident.objects.all()
     serializer_class = ResidentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrManager]
 
 class AnnouncementViewSet(viewsets.ModelViewSet):
     queryset = Announcement.objects.filter(is_active=True)
@@ -230,3 +233,48 @@ class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.filter(is_active=True)
     serializer_class = EventSerializer
     permission_classes = [IsAuthenticated]
+
+
+class HealthView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+        return Response({"status": "ok"})
+
+
+class MeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        role = get_user_role(user)
+
+        resident_data = None
+        staff_data = None
+
+        try:
+            resident = user.resident
+        except Resident.DoesNotExist:
+            resident = None
+        if resident:
+            resident_data = ResidentProfileSerializer(resident).data
+
+        try:
+            staff = user.staff
+        except Staff.DoesNotExist:
+            staff = None
+        if staff:
+            staff_data = StaffProfileSerializer(staff).data
+
+        return Response(
+            {
+                "id": user.id,
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "role": role,
+                "resident": resident_data,
+                "staff": staff_data,
+            }
+        )

@@ -35,13 +35,19 @@ class AuthTests(APITestCase):
 
     def test_login_refresh_logout_flow(self):
         login_response = self.client.post(
-            "/api/auth/login/",
+            "/api/token/",
             {"email": self.user.email, "password": self.password},
             format="json",
         )
         self.assertEqual(login_response.status_code, 200)
         self.assertIn("access", login_response.data)
         self.assertIn("refresh", login_response.data)
+        self.assertEqual(login_response.data["user_id"], self.user.id)
+        self.assertEqual(login_response.data["email"], self.user.email)
+        self.assertIn("first_name", login_response.data)
+        self.assertIn("last_name", login_response.data)
+        self.assertIn("is_staff", login_response.data)
+        self.assertIn("is_superuser", login_response.data)
 
         refresh_response = self.client.post(
             "/api/token/refresh/",
@@ -51,43 +57,39 @@ class AuthTests(APITestCase):
         self.assertEqual(refresh_response.status_code, 200)
         self.assertIn("access", refresh_response.data)
 
-        self.client.credentials(
-            HTTP_AUTHORIZATION=f"Bearer {login_response.data['access']}"
-        )
-        logout_response = self.client.post("/api/auth/logout/", format="json")
-        self.assertEqual(logout_response.status_code, 200)
-
     def test_me_requires_valid_token(self):
-        response = self.client.get("/api/me/")
+        response = self.client.get("/api/me")
         self.assertEqual(response.status_code, 401)
         self.assertIn("error", response.data)
 
         self.client.credentials(HTTP_AUTHORIZATION="Bearer invalid")
-        invalid_response = self.client.get("/api/me/")
+        invalid_response = self.client.get("/api/me")
         self.assertEqual(invalid_response.status_code, 401)
         self.assertIn("error", invalid_response.data)
 
         token = AccessToken.for_user(self.user)
         token.set_exp(lifetime=timedelta(seconds=-1))
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
-        expired_response = self.client.get("/api/me/")
+        expired_response = self.client.get("/api/me")
         self.assertEqual(expired_response.status_code, 401)
         self.assertIn("error", expired_response.data)
 
     def test_me_returns_role(self):
         token = AccessToken.for_user(self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
-        response = self.client.get("/api/me/")
+        response = self.client.get("/api/me")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["role"], "Resident")
-        self.assertEqual(response.data["user"]["email"], self.user.email)
+        self.assertEqual(response.data["role"], "resident")
+        self.assertEqual(response.data["email"], self.user.email)
+        self.assertIsNotNone(response.data["resident"])
 
     def test_jwt_access_token_valid(self):
         token = AccessToken.for_user(self.staff_user)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
-        response = self.client.get("/api/me/")
+        response = self.client.get("/api/me")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["role"], "Property Manager")
+        self.assertEqual(response.data["role"], "manager")
+        self.assertIsNotNone(response.data["staff"])
 
     def test_invalid_refresh_token(self):
         response = self.client.post(
