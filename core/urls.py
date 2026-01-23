@@ -6,7 +6,7 @@ from .views import (
     VisitorParkingViewSet, DocumentViewSet, ForumPostViewSet,
     ForumCommentViewSet, EmergencyContactViewSet, StaffViewSet,
     AnnouncementViewSet, PackageViewSet, PollViewSet, IncidentReportViewSet,
-    EventViewSet, HealthView, MeView
+    EventViewSet, HealthView, MeView, DashboardSummaryView
 )
 
 from .views import CustomTokenObtainPairView
@@ -37,6 +37,8 @@ urlpatterns = [
     path('health/', HealthView.as_view(), name='health_slash'),
     path('me', MeView.as_view(), name='me'),
     path('me/', MeView.as_view(), name='me_slash'),
+    path('dashboard/summary', DashboardSummaryView.as_view(), name='dashboard-summary'),
+    path('dashboard/summary/', DashboardSummaryView.as_view(), name='dashboard-summary-slash'),
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('', include(router.urls)),  # Include your API endpoints

@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from .models import MaintenanceRequest, Resident
@@ -28,7 +28,8 @@ from .serializers import (
     EventSerializer, ResidentProfileSerializer, StaffProfileSerializer
 )
 from .permissions import IsAdminOrManager
-from .roles import get_user_role
+from .pagination import AnnouncementPagination
+from .roles import ROLE_ADMIN, ROLE_PROPERTY_MANAGER, get_user_role
 
 
 class ResidentViewSet(viewsets.ModelViewSet):
@@ -37,9 +38,35 @@ class ResidentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsAdminOrManager]
 
 class AnnouncementViewSet(viewsets.ModelViewSet):
-    queryset = Announcement.objects.filter(is_active=True)
     serializer_class = AnnouncementSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = AnnouncementPagination
+    queryset = Announcement.objects.all()
+
+    def get_permissions(self):
+        if self.request.method in SAFE_METHODS:
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), IsAdminOrManager()]
+
+    def get_queryset(self):
+        queryset = Announcement.objects.all().order_by('-created_at')
+        role = get_user_role(self.request.user)
+        is_active_param = self.request.query_params.get('is_active')
+
+        if role in (ROLE_ADMIN, ROLE_PROPERTY_MANAGER):
+            if self.action != 'list':
+                return queryset
+            if is_active_param is None:
+                return queryset.filter(is_active=True)
+            if str(is_active_param).lower() in ('1', 'true', 't', 'yes'):
+                return queryset.filter(is_active=True)
+            if str(is_active_param).lower() in ('0', 'false', 'f', 'no'):
+                return queryset.filter(is_active=False)
+            return queryset
+        return queryset.filter(is_active=True)
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
 
 class MaintenanceRequestViewSet(viewsets.ModelViewSet):
     serializer_class = MaintenanceRequestSerializer
@@ -276,5 +303,27 @@ class MeView(APIView):
                 "role": role,
                 "resident": resident_data,
                 "staff": staff_data,
+            }
+        )
+
+
+class DashboardSummaryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        announcements = Announcement.objects.filter(is_active=True)
+
+        latest = announcements.order_by('-created_at')[:5]
+        latest_payload = [
+            {"id": item.id, "title": item.title, "created_at": item.created_at}
+            for item in latest
+        ]
+
+        return Response(
+            {
+                "announcements": {
+                    "active_count": announcements.count(),
+                    "latest": latest_payload,
+                }
             }
         )

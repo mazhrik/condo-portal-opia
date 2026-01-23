@@ -30,7 +30,14 @@ class ResidentProfileSerializer(serializers.ModelSerializer):
 class AnnouncementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Announcement
-        fields = '__all__'
+        fields = (
+            'id',
+            'title',
+            'content',
+            'is_active',
+            'created_at',
+            'updated_at',
+        )
 
 class MaintenanceRequestSerializer(serializers.ModelSerializer):
     resident_name = serializers.SerializerMethodField()
