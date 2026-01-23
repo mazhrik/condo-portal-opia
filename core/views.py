@@ -27,7 +27,7 @@ from .serializers import (
     PollOptionSerializer, PollVoteSerializer, IncidentReportSerializer,
     EventSerializer, ResidentProfileSerializer, StaffProfileSerializer
 )
-from .permissions import IsAdminOrManager
+from .permissions import IsAdminOrManager, IsResident
 from .pagination import AnnouncementPagination
 from .roles import ROLE_ADMIN, ROLE_PROPERTY_MANAGER, get_user_role
 
@@ -72,6 +72,13 @@ class MaintenanceRequestViewSet(viewsets.ModelViewSet):
     serializer_class = MaintenanceRequestSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_permissions(self):
+        if self.action in ("update", "partial_update", "destroy", "update_status"):
+            return [IsAuthenticated(), IsAdminOrManager()]
+        if self.action == "create":
+            return [IsAuthenticated(), IsResident()]
+        return [IsAuthenticated()]
+
     def get_queryset(self):
         user = self.request.user
         if hasattr(user, 'staff'):
@@ -90,9 +97,13 @@ class MaintenanceRequestViewSet(viewsets.ModelViewSet):
         status_value = request.data.get('status')
 
         if status_value in dict(MaintenanceRequest.STATUS_CHOICES):
-            maintenance_request.status = status_value
-            maintenance_request.save()
-            serializer = self.get_serializer(maintenance_request)
+            serializer = self.get_serializer(
+                maintenance_request,
+                data={"status": status_value, "completion_notes": request.data.get("completion_notes")},
+                partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
             return Response(serializer.data)
 
         return Response({"error": "Invalid status"}, status=status.HTTP_400_BAD_REQUEST) 

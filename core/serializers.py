@@ -56,6 +56,46 @@ class MaintenanceRequestSerializer(serializers.ModelSerializer):
             return f"{obj.assigned_to.user.first_name} {obj.assigned_to.user.last_name}"
         return None
 
+    def validate(self, attrs):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        instance = getattr(self, "instance", None)
+
+        # Enforce status transitions on updates
+        if instance and "status" in attrs:
+            from_status = instance.status
+            to_status = attrs["status"]
+            allowed = {
+                "new": {"in_review"},
+                "in_review": {"assigned"},
+                "assigned": {"in_progress"},
+                "in_progress": {"completed"},
+                "completed": {"closed"},
+                "closed": set(),
+            }
+
+            if from_status != to_status:
+                is_admin = bool(user and (user.is_superuser or user.is_staff))
+                if to_status == "closed" and is_admin:
+                    pass
+                elif to_status not in allowed.get(from_status, set()):
+                    raise serializers.ValidationError({
+                        "status": f"Cannot transition from {from_status} to {to_status}."
+                    })
+
+        if attrs.get("status") == "completed" and not attrs.get("completion_notes"):
+            raise serializers.ValidationError({
+                "completion_notes": "completion_notes is required when status is completed."
+            })
+
+        assigned_to = attrs.get("assigned_to")
+        if assigned_to and not isinstance(assigned_to, Staff):
+            raise serializers.ValidationError({
+                "assigned_to": "assigned_to must reference a staff user."
+            })
+
+        return attrs
+
 class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment

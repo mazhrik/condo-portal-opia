@@ -24,9 +24,12 @@ class Announcement(models.Model):
 
 class MaintenanceRequest(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
+        ('new', 'New'),
+        ('in_review', 'In Review'),
+        ('assigned', 'Assigned'),
         ('in_progress', 'In Progress'),
         ('completed', 'Completed'),
+        ('closed', 'Closed'),
     ]
     
     PRIORITY_CHOICES = [
@@ -38,7 +41,7 @@ class MaintenanceRequest(models.Model):
     resident = models.ForeignKey('Resident', on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     description = models.TextField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
