@@ -1,3 +1,4 @@
+Phase 0
 Date: 2026-01-23
 Branch: main
 Commit: 00b32a18c698290d308fbfbd4b2c7fa6a905a57a
@@ -14,10 +15,10 @@ What was tested:
 
 ---
 
+Phase 1
 Date: 2026-01-23
-Phase: 1
 Branch: main
-Commit: e7595d5ca837d6bd3d0dd16a2a32cd99ee851ad9
+Commit: 305fef400b7510528588559aa68f96e4759e9325
 QA Status: PASS
 
 Bugs open:
@@ -28,5 +29,15 @@ What was tested:
 - API: admin/manager create/update/deactivate/reactivate, inactive filter
 - API: dashboard summary shape (active_count + latest) and updates after create/deactivate
 - UI: /dashboard widgets render, /announcements list/detail loads, role-gated controls enforced, manager create/deactivate flow
+
+Evidence:
+- Tests: `backend_env/bin/python manage.py test core.tests.test_announcements_dashboard`
+- API smoke: local APIClient checks for list/detail, RBAC 403/404, create/update/deactivate, dashboard summary
+- UI smoke: Playwright run against preview build (`npm run build` + `npm run preview`)
+
+Test data (local only; passwords set locally):
+- resident_phase1_ui@example.com (Resident)
+- manager_phase1_ui@example.com (Manager)
+- admin_phase1_ui@example.com (Admin)
 
 Phase 1 exit criteria verified.

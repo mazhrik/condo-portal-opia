@@ -1,6 +1,6 @@
 # Condo Portal Rollout Phases
 
-> ACTIVE PHASE: Phase 1 — Announcements + Dashboard
+> ACTIVE PHASE: Phase 2 — Maintenance Requests
 
 ## Phase 0 — JWT Auth Hardening + RBAC + /api/me + Health + Protected Routes (COMPLETE)
 Objective
@@ -15,7 +15,7 @@ Completed Scope
 Exit Criteria
 - Met and approved.
 
-## Phase 1 — Announcements + Dashboard (ACTIVE)
+## Phase 1 — Announcements + Dashboard (COMPLETE)
 Objective
 - Deliver announcements and a lightweight dashboard summary for residents and staff.
 
@@ -32,8 +32,9 @@ Exit Criteria
 - Residents can read active announcements.
 - Admin/Manager can create/update/deactivate announcements.
 - Dashboard widgets render using summary endpoint.
+- Met and approved.
 
-## Phase 2 — Maintenance Requests
+## Phase 2 — Maintenance Requests (ACTIVE)
 Objective
 - Enable maintenance request lifecycle for residents and staff.
 
