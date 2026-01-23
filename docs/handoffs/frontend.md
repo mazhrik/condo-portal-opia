@@ -26,3 +26,11 @@
   - Resident cannot see CRUD UI - PASS
   - Admin/Manager can create/edit/deactivate - PASS
 - Blockers: None
+
+## 2026-01-23
+- Branch: main @ faa34bb
+- Manual E2E (Phase 1 explicit evidence):
+  - Dashboard widgets render - PASS (active count shows a number; latest list rendered items)
+  - Announcements list - PASS
+  - Announcement detail page - PASS (title/body render; read-only on detail)
+- Notes: Role gating verified (resident read-only, admin controls present on list).
