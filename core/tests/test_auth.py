@@ -105,3 +105,4 @@ class AuthTests(APITestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertIn("access", response.data)
+        self.assertNotIn("refresh", response.data)
