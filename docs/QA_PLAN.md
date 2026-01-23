@@ -48,9 +48,38 @@ Evidence
 
 ## Phase 1 — Announcements
 ### Functional Tests
-- List announcements returns only active items.
-- Admin/Manager can create/update/deactivate.
-- Resident cannot create/update/deactivate.
+- Resident list shows active announcements only (default `is_active=true`).
+- Resident cannot create/update/deactivate announcements (403).
+- Resident cannot view inactive announcement detail (hidden).
+- Admin/Manager can create announcements.
+- Admin/Manager can update announcements.
+- Admin/Manager can deactivate/reactivate announcements.
+- Admin/Manager can filter inactive announcements (`is_active=false`).
+- Dashboard summary returns active count + latest list.
+- Dashboard summary count updates after create/deactivate.
+
+### Execution Results (2026-01-23)
+API Tests
+- PASS: Resident list returns active-only by default.
+- PASS: Resident create/update blocked with 403.
+- PASS: Resident cannot access inactive announcement detail (404).
+- PASS: Admin/Manager can create announcement (201).
+- PASS: Admin/Manager can update announcement (200).
+- PASS: Admin/Manager can deactivate/reactivate announcement (200).
+- PASS: Admin/Manager can filter inactive announcements (200 + inactive results).
+- PASS: Dashboard summary shape includes active_count + latest list.
+- PASS: Dashboard summary active_count reflects create/deactivate changes.
+
+UI Tests
+- BLOCKED: /dashboard loads when logged in (manual UI not executed).
+- BLOCKED: Announcements list renders correctly (manual UI not executed).
+- BLOCKED: Announcement detail page works (manual UI not executed).
+- BLOCKED: Role gating controls (manual UI not executed).
+- BLOCKED: Loading/error/empty states (manual UI not executed).
+
+Evidence
+- Tests: `backend_env/bin/python manage.py test core.tests.test_announcements_dashboard`
+- Manual APIClient smoke: list/detail, RBAC 403/404, create/update/deactivate, inactive filter, dashboard summary.
 
 ---
 
