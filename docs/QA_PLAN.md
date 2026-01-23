@@ -21,11 +21,11 @@
 - Ensure access token kept in memory only; refresh token stored in localStorage.
 - Ensure logout clears tokens and access to protected routes fails.
 
-### Execution Results (2026-01-23)
+### Execution Results (Retest 2026-01-23)
 JWT Flow Tests
 - PASS: Login success — /api/token/ returns access + refresh + user metadata.
 - PASS: Login failure — /api/token/ invalid credentials returns 401 with error payload.
-- FAIL: Refresh success — /api/token/refresh/ returns access + refresh (contract expects access only). See docs/bugs/BUG-001.md.
+- PASS: Refresh success — /api/token/refresh/ returns access only (contract match).
 - PASS: Refresh expired/invalid — /api/token/refresh/ with invalid token returns 401 with error payload.
 
 RBAC Negative Tests
@@ -37,8 +37,12 @@ Session Handling
 - PASS: Logout clears tokens and protected routes redirect to /login (src/context/AuthContext.tsx, src/components/ProtectedRoute.tsx).
 
 Additional Phase 0 coverage
-- PASS: /api/me returns role and profile payload with valid JWT (core/tests/test_auth.py).
-- PASS: /api/health returns { "status": "ok" } (core/tests/test_health.py).
+- PASS: /api/me returns role and profile payload with valid JWT.
+- PASS: /api/health returns { "status": "ok" }.
+
+Evidence
+- Tests: `backend_env/bin/python manage.py test core.tests.test_auth core.tests.test_rbac core.tests.test_health`
+- Manual API smoke (Django APIClient): login + refresh shape + /api/me + RBAC 401/403.
 
 ---
 

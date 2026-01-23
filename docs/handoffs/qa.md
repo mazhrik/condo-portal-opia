@@ -1,12 +1,13 @@
 Date: 2026-01-23
 Branch: main
-Commit: 8f5d6d3ea2ac8f0e2445e36dfa5e6ad85803b424
-QA Status: FAIL
+Commit: 00b32a18c698290d308fbfbd4b2c7fa6a905a57a
+QA Status: PASS
 
-Bugs:
-- docs/bugs/BUG-001.md
+Bugs open:
+- None
 
 What was tested:
-- Phase 0 JWT login/refresh error handling + /api/me + /api/health (core/tests/test_auth.py, core/tests/test_health.py)
-- Phase 0 RBAC 401/403 behavior on admin-only endpoint (core/tests/test_rbac.py)
-- Frontend auth guard, token storage, and logout flow (code review)
+- Phase 0 JWT login/refresh + /api/me + /api/health (core.tests.test_auth, core.tests.test_health)
+- Phase 0 RBAC 401/403 behavior (core.tests.test_rbac)
+- Manual APIClient smoke: login response shape, refresh access-only, /api/me, RBAC 401/403
+- Frontend protected routes/auth flow (ProtectedRoute + AuthContext + Login redirect) smoke via code review
