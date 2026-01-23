@@ -15,3 +15,14 @@
   - Refresh flow works (401 -> refresh -> retry) - PASS (triggered via DEV auth helper)
   - Logout clears auth and redirects - PASS
 - Blockers: None
+
+## 2026-01-23
+- Phase: 1
+- Branch: main @ b9e187f
+- Routes/components: /dashboard, /announcements, /announcements/:id; Dashboard summary widgets; Announcements list/detail + role-gated CRUD
+- Manual E2E:
+  - Dashboard loads (authorized) - PASS
+  - Announcement list loads (authorized) - PASS
+  - Resident cannot see CRUD UI - PASS
+  - Admin/Manager can create/edit/deactivate - PASS
+- Blockers: None
