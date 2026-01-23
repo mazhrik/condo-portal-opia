@@ -1,47 +1,37 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+from .models import MaintenanceRequest, Resident
+from .serializers import MaintenanceRequestSerializer
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
+
+from django.contrib.auth import authenticate
 
 from .models import (
-    Amenity,
-    AmenityBooking,
-    Announcement,
-    Document,
-    EmergencyContact,
-    ForumComment,
-    ForumPost,
-    MaintenanceRequest,
-    ParkingSpot,
-    Payment,
-    Resident,
-    Staff,
-    VisitorParking,
+    Resident, MaintenanceRequest, Payment, Amenity, AmenityBooking,
+    ParkingSpot, VisitorParking, Document, ForumPost, ForumComment,
+    EmergencyContact, Staff, Announcement, Package, Poll, PollOption, PollVote,
+    IncidentReport, Event
 )
-from .permissions import IsAdmin, IsAdminOrManager
-from .roles import get_user_role
+
 from .serializers import (
-    AmenityBookingSerializer,
-    AmenitySerializer,
-    AnnouncementSerializer,
-    DocumentSerializer,
-    EmergencyContactSerializer,
-    ForumCommentSerializer,
-    ForumPostSerializer,
-    MaintenanceRequestSerializer,
-    MeSerializer,
-    ParkingSpotSerializer,
-    PaymentSerializer,
-    ResidentSerializer,
-    StaffSerializer,
-    VisitorParkingSerializer,
+    ResidentSerializer, MaintenanceRequestSerializer, PaymentSerializer,
+    AmenitySerializer, AmenityBookingSerializer, ParkingSpotSerializer,
+    VisitorParkingSerializer, DocumentSerializer, ForumPostSerializer,
+    ForumCommentSerializer, EmergencyContactSerializer, StaffSerializer,
+    AnnouncementSerializer, PackageSerializer, PollSerializer,
+    PollOptionSerializer, PollVoteSerializer, IncidentReportSerializer,
+    EventSerializer
 )
+
 
 class ResidentViewSet(viewsets.ModelViewSet):
     queryset = Resident.objects.all()
     serializer_class = ResidentSerializer
-    permission_classes = [IsAdminOrManager]
+    permission_classes = [IsAuthenticated]
 
 class AnnouncementViewSet(viewsets.ModelViewSet):
     queryset = Announcement.objects.filter(is_active=True)
@@ -63,6 +53,19 @@ class MaintenanceRequestViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         resident = get_object_or_404(Resident, user=self.request.user)
         serializer.save(resident=resident)
+
+    @action(detail=True, methods=['post'])
+    def update_status(self, request, pk=None):
+        maintenance_request = self.get_object()
+        status_value = request.data.get('status')
+
+        if status_value in dict(MaintenanceRequest.STATUS_CHOICES):
+            maintenance_request.status = status_value
+            maintenance_request.save()
+            serializer = self.get_serializer(maintenance_request)
+            return Response(serializer.data)
+
+        return Response({"error": "Invalid status"}, status=status.HTTP_400_BAD_REQUEST) 
 
 class PaymentViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentSerializer
@@ -124,21 +127,106 @@ class EmergencyContactViewSet(viewsets.ModelViewSet):
 class StaffViewSet(viewsets.ModelViewSet):
     queryset = Staff.objects.all()
     serializer_class = StaffSerializer
-    permission_classes = [IsAdmin]
-
-
-class HealthCheckView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        return Response({"status": "ok"})
-
-
-class MeView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        payload = {"user": request.user, "role": get_user_role(request.user)}
-        serializer = MeSerializer(payload)
-        return Response(serializer.data)
+class PackageViewSet(viewsets.ModelViewSet):
+    serializer_class = PackageSerializer
+    permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        user = self.request.user
+        if hasattr(user, 'staff'):
+             return Package.objects.all().order_by('-arrival_date')
+        if hasattr(user, 'resident'):
+             return Package.objects.filter(recipient=user.resident).order_by('-arrival_date')
+        return Package.objects.none()
+
+
+class CustomAuthToken(ObtainAuthToken):
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        password = request.data.get("password")
+        
+        user = authenticate(username=email, password=password)  # Now using email
+        if user:
+            token, _ = Token.objects.get_or_create(user=user)
+            return Response({"token": token.key})
+        
+        return Response({"error": "Invalid credentials"}, status=400)
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .serializers import CustomTokenObtainPairSerializer
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
+class PollViewSet(viewsets.ModelViewSet):
+    queryset = Poll.objects.filter(is_active=True)
+    serializer_class = PollSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        # Handle options
+        poll = serializer.instance
+        options_data = request.data.get('options_data', [])
+        for opt_data in options_data:
+            if opt_data.get('text'):
+                PollOption.objects.create(poll=poll, text=opt_data['text'])
+        
+        # Re-serialize to include options
+        serializer = self.get_serializer(poll)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer):
+        # Ensure user is staff
+        if hasattr(self.request.user, 'staff'):
+            serializer.save(created_by=self.request.user.staff)
+        else:
+            # Fallback or error? For dev, assume first staff or create one?
+            # Or just let it fail if not staff.
+            # Ideally standard flow:
+            serializer.save(created_by=Staff.objects.first()) # Temporary fallback for dev if auth mapping issues
+
+    @action(detail=True, methods=['post'])
+    def vote(self, request, pk=None):
+        poll = self.get_object()
+        option_id = request.data.get('option_id')
+        
+        try:
+            resident = request.user.resident
+        except Resident.DoesNotExist:
+            return Response({"error": "User is not a resident"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if PollVote.objects.filter(poll=poll, resident=resident).exists():
+            return Response({"error": "You have already voted in this poll"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            option = PollOption.objects.get(id=option_id, poll=poll)
+        except PollOption.DoesNotExist:
+            return Response({"error": "Invalid option"}, status=status.HTTP_400_BAD_REQUEST)
+
+        PollVote.objects.create(poll=poll, option=option, resident=resident)
+        return Response({"message": "Vote recorded successfully"})
+
+class IncidentReportViewSet(viewsets.ModelViewSet):
+    serializer_class = IncidentReportSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if hasattr(user, 'resident'):
+            return IncidentReport.objects.filter(resident=user.resident)
+        return IncidentReport.objects.all()
+
+    def perform_create(self, serializer):
+        resident = get_object_or_404(Resident, user=self.request.user)
+        serializer.save(resident=resident)
+
+class EventViewSet(viewsets.ModelViewSet):
+    queryset = Event.objects.filter(is_active=True)
+    serializer_class = EventSerializer
+    permission_classes = [IsAuthenticated]

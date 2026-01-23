@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: condo-backend
+  labels:
+    app: condo-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: condo-backend
+  template:
+    metadata:
+      labels:
+        app: condo-backend
+    spec:
+      containers:
+      - name: condo-backend
+        image: condo-backend:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DEBUG
+          value: "False"
+        - name: DJANGO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: django-secret-key
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: database-url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: redis-url
+        - name: ALLOWED_HOSTS
+          value: "*"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

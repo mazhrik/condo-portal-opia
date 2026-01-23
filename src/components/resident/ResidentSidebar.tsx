@@ -8,6 +8,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarProvider,
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard,
@@ -19,6 +20,10 @@ import {
   Car,
   Users,
   FileText,
+  Box,
+  Vote,
+  ShieldAlert,
+  CalendarDays,
 } from "lucide-react";
 
 const menuItems = [
@@ -63,9 +68,29 @@ const menuItems = [
     icon: Users,
   },
   {
+    title: "Packages",
+    url: "/resident/packages",
+    icon: Box,
+  },
+  {
     title: "Messages",
     url: "/resident/messages",
     icon: MessageSquare,
+  },
+  {
+    title: "Polls",
+    url: "/resident/polls",
+    icon: Vote,
+  },
+  {
+    title: "Incidents",
+    url: "/resident/incidents",
+    icon: ShieldAlert,
+  },
+  {
+    title: "Events",
+    url: "/resident/events",
+    icon: CalendarDays,
   },
 ];
 

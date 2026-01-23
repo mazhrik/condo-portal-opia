@@ -128,3 +128,64 @@ class Staff(models.Model):
     position = models.CharField(max_length=100)
     department = models.CharField(max_length=100)
     hire_date = models.DateField()
+
+class Package(models.Model):
+    STATUS_CHOICES = [
+        ('received', 'Received'),
+        ('picked_up', 'Picked Up'),
+    ]
+
+    recipient = models.ForeignKey(Resident, on_delete=models.CASCADE)
+    courier = models.CharField(max_length=100)
+    tracking_number = models.CharField(max_length=100, blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='received')
+    arrival_date = models.DateTimeField(auto_now_add=True)
+    pickup_date = models.DateTimeField(null=True, blank=True)
+    notes = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Package for {self.recipient} from {self.courier}"
+
+class Poll(models.Model):
+    question = models.CharField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey('Staff', on_delete=models.CASCADE)
+
+class PollOption(models.Model):
+    poll = models.ForeignKey(Poll, related_name='options', on_delete=models.CASCADE)
+    text = models.CharField(max_length=200)
+
+class PollVote(models.Model):
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE)
+    option = models.ForeignKey(PollOption, on_delete=models.CASCADE)
+    resident = models.ForeignKey('Resident', on_delete=models.CASCADE)
+    voted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('poll', 'resident')
+
+class IncidentReport(models.Model):
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('investigating', 'Investigating'),
+        ('resolved', 'Resolved'),
+    ]
+    
+    resident = models.ForeignKey('Resident', on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    location = models.CharField(max_length=200, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    image = models.ImageField(upload_to='incidents/', blank=True, null=True)
+
+class Event(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    date = models.DateTimeField()
+    location = models.CharField(max_length=200)
+    created_by = models.ForeignKey('Staff', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)

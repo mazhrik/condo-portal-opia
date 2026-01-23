@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: condo-backend
+  labels:
+    app: condo-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: condo-backend
+  template:
+    metadata:
+      labels:
+        app: condo-backend
+    spec:
+      containers:
+      - name: backend
+        image: condo-backend:latest # Replace with ECR URI
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: DATABASE_URL
+        - name: DJANGO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: backend-secrets
+              key: DJANGO_SECRET_KEY
+        - name: REDIS_URL
+          value: "redis://redis-service:6379/1" # Assuming internal Redis or ElastiCache endpoint
+        readinessProbe:
+          httpGet:
+            path: /api/users/ 
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: condo-backend
+spec:
+  selector:
+    app: condo-backend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: ClusterIP

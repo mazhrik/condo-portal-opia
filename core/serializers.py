@@ -1,20 +1,17 @@
-from django.contrib.auth.models import User
 from rest_framework import serializers
+from django.contrib.auth.models import User
 from .models import (
     Resident, MaintenanceRequest, Payment, Amenity, AmenityBooking,
     ParkingSpot, VisitorParking, Document, ForumPost, ForumComment,
-    EmergencyContact, Staff, Announcement
+    EmergencyContact, Staff, Announcement, Package, Poll, PollOption, PollVote,
+    IncidentReport, Event
 )
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'first_name', 'last_name')
-
-
-class MeSerializer(serializers.Serializer):
-    user = UserSerializer()
-    role = serializers.CharField()
 
 class ResidentSerializer(serializers.ModelSerializer):
     user = UserSerializer()
@@ -35,6 +32,7 @@ class MaintenanceRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = MaintenanceRequest
         fields = '__all__'
+        read_only_fields = ['resident']
 
     def get_resident_name(self, obj):
         return f"{obj.resident.user.first_name} {obj.resident.user.last_name}"
@@ -94,4 +92,79 @@ class StaffSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Staff
+        fields = '__all__'
+
+class PackageSerializer(serializers.ModelSerializer):
+    recipient_name = serializers.SerializerMethodField()
+    unit_number = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Package
+        fields = '__all__'
+
+    def get_recipient_name(self, obj):
+        return f"{obj.recipient.user.first_name} {obj.recipient.user.last_name}"
+
+    def get_unit_number(self, obj):
+        return obj.recipient.unit_number
+
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth.models import User
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['email'] = user.email  # Add email in JWT payload
+        return token
+
+    def validate(self, attrs):
+        # Default validation
+        data = super().validate(attrs)
+        
+        # Extra custom response
+        data.update({
+            'user_id': self.user.id,
+            'email': self.user.email,
+            'first_name': self.user.first_name,
+            'last_name': self.user.last_name,
+            'is_staff': self.user.is_staff,
+            'is_superuser': self.user.is_superuser,
+        })
+        
+        return data
+
+class PollOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PollOption
+        fields = '__all__'
+
+class PollSerializer(serializers.ModelSerializer):
+    options = PollOptionSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Poll
+        fields = '__all__'
+        read_only_fields = ['created_by']
+
+class PollVoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PollVote
+        fields = '__all__'
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=PollVote.objects.all(),
+                fields=['poll', 'resident']
+            )
+        ]
+
+class IncidentReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IncidentReport
+        fields = '__all__'
+        read_only_fields = ['resident']
+
+class EventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
         fields = '__all__'

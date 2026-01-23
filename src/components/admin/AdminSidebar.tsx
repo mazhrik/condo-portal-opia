@@ -15,6 +15,10 @@ import {
   Settings,
   FileText,
   Bell,
+  Box,
+  Vote,
+  ShieldAlert,
+  Calendar,
 } from "lucide-react";
 
 const menuItems = [
@@ -39,9 +43,29 @@ const menuItems = [
     icon: Bell,
   },
   {
+    title: "Packages",
+    url: "/admin/packages",
+    icon: Box,
+  },
+  {
     title: "Settings",
     url: "/admin/settings",
     icon: Settings,
+  },
+  {
+    title: "Polls",
+    url: "/admin/polls",
+    icon: Vote,
+  },
+  {
+    title: "Incidents",
+    url: "/admin/incidents",
+    icon: ShieldAlert,
+  },
+  {
+    title: "Events",
+    url: "/admin/events",
+    icon: Calendar,
   },
 ];
 

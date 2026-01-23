@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { ResidentLayout } from "@/components/resident/ResidentLayout";
 
 const Parking = () => {
   const { toast } = useToast();
@@ -57,68 +58,62 @@ const Parking = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-background/50 p-8">
-      <div className="fixed inset-0 -z-10">
-        <img
-          src="/lovable-uploads/5f307eb2-750f-41ff-aeb3-659ec419eb29.png"
-          alt="Modern interior"
-          className="w-full h-full object-cover opacity-[0.03]"
-        />
-      </div>
-      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-background to-background/50" />
-      <div className="relative max-w-7xl mx-auto space-y-8">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Parking</h1>
-          <p className="text-gray-400">Manage your parking space and visitor passes</p>
-        </header>
+    <ResidentLayout>
+      <div className="p-8 relative">
+        <div className="max-w-7xl mx-auto space-y-8">
+          <header className="mb-8">
+            <h1 className="text-3xl font-bold text-primary">Parking</h1>
+            <p className="text-gray-600">Manage your parking space and visitor passes</p>
+          </header>
 
-        <div className="space-y-6">
-          <Card className="glass">
-            <CardHeader className="flex flex-row items-center space-x-4">
-              <Car className="w-8 h-8 text-amber-500" />
-              <CardTitle className="text-white">Parking Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm font-medium text-gray-300">Your Spot: {parkingSpot?.[0]?.spot_number}</p>
-                <p className="text-sm text-gray-400">
-                  Visitor Passes Available: {visitorPasses?.filter(pass => pass.is_active).length || 0}
-                </p>
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="w-full mt-2 btn-gradient">Request Visitor Pass</Button>
-                  </DialogTrigger>
-                  <DialogContent className="glass border-white/10">
-                    <DialogHeader>
-                      <DialogTitle className="text-white">Request Visitor Pass</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      <Input
-                        placeholder="Visitor Name"
-                        value={visitorName}
-                        onChange={(e) => setVisitorName(e.target.value)}
-                        required
-                        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                      />
-                      <Input
-                        placeholder="Vehicle Number"
-                        value={vehicleNumber}
-                        onChange={(e) => setVehicleNumber(e.target.value)}
-                        required
-                        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                      />
-                      <Button type="submit" className="w-full btn-gradient">
-                        Request Pass
-                      </Button>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <Card className="glass">
+              <CardHeader className="flex flex-row items-center space-x-4">
+                <Car className="w-8 h-8 text-amber-500" />
+                <CardTitle className="text-primary">Parking Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Your Spot: {parkingSpot?.[0]?.spot_number}</p>
+                  <p className="text-sm text-gray-500">
+                    Visitor Passes Available: {visitorPasses?.filter((pass: any) => pass.is_active).length || 0}
+                  </p>
+                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="w-full mt-2 btn-gradient">Request Visitor Pass</Button>
+                    </DialogTrigger>
+                    <DialogContent className="glass border-white/10">
+                      <DialogHeader>
+                        <DialogTitle className="text-primary">Request Visitor Pass</DialogTitle>
+                      </DialogHeader>
+                      <form onSubmit={handleSubmit} className="space-y-4">
+                        <Input
+                          placeholder="Visitor Name"
+                          value={visitorName}
+                          onChange={(e) => setVisitorName(e.target.value)}
+                          required
+                          className="bg-white/10 border-white/20 text-foreground placeholder:text-gray-400"
+                        />
+                        <Input
+                          placeholder="Vehicle Number"
+                          value={vehicleNumber}
+                          onChange={(e) => setVehicleNumber(e.target.value)}
+                          required
+                          className="bg-white/10 border-white/20 text-foreground placeholder:text-gray-400"
+                        />
+                        <Button type="submit" className="w-full btn-gradient">
+                          Request Pass
+                        </Button>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
-    </div>
+    </ResidentLayout>
   );
 };
 
