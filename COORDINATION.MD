@@ -59,6 +59,11 @@ VITE_API_BASE_URL=http://localhost:8000/api
    - Create `Dockerfile` (Nginx multi-stage).
    - Verify UI against new API endpoints.
 
+### Local Verification (All Phases)
+- Run `npm install` before starting work (or when dependencies change).
+- Run `npm run dev` to validate the app boots locally.
+- Run `npm run lint` and `npx vitest run` before handoff.
+
 ## 6. Shared Constants
 *(Add shared enums/constants here as they are defined)*
 - **User Roles**: `ADMIN`, `RESIDENT`, `STAFF`.
