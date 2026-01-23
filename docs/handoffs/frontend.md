@@ -34,3 +34,16 @@
   - Announcements list - PASS
   - Announcement detail page - PASS (title/body render; read-only on detail)
 - Notes: Role gating verified (resident read-only, admin controls present on list).
+
+## 2026-01-23
+- Phase: 2
+- Branch: main @ c25118f
+- Routes/components: /maintenance, /maintenance/new, /maintenance/all, /maintenance/:id; Maintenance list/detail/create/admin management UI; maintenance API bindings
+- Manual E2E:
+  - Resident can create request and see it in list - PASS
+  - Resident can open detail - PASS
+  - Resident cannot see admin controls - PASS
+  - Admin/Manager can view all requests - PASS
+  - Admin/Manager can change status (assignment if applicable) - PASS (new -> in_review)
+  - Error + empty states render - PASS
+- Blockers: None
