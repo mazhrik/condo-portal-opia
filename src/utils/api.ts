@@ -1,12 +1,71 @@
 import axios from "axios";
+import {
+  clearTokens,
+  getAccessToken,
+  getRefreshToken,
+  setAccessToken,
+} from "@/utils/auth";
+
+export type Role = "admin" | "manager" | "resident";
+
+export interface MeResponse {
+  id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: Role;
+  resident: {
+    id: number;
+    unit_number: string;
+    phone_number: string;
+    move_in_date: string;
+  } | null;
+  staff: {
+    id: number;
+    title?: string | null;
+  } | null;
+}
+
+export interface LoginResponse {
+  access: string;
+  refresh: string;
+  user_id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  is_staff: boolean;
+  is_superuser: boolean;
+}
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api/",
+  baseURL: "/api",
 });
+
+const refreshClient = axios.create({
+  baseURL: "/api",
+});
+
+export const refreshAccessToken = async () => {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) {
+    return null;
+  }
+
+  try {
+    const response = await refreshClient.post("/token/refresh/", {
+      refresh: refreshToken,
+    });
+    setAccessToken(response.data.access);
+    return response.data.access as string;
+  } catch (error) {
+    clearTokens();
+    return null;
+  }
+};
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("accessToken");
+    const token = getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -20,21 +79,14 @@ export default api;
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response && error.response.status === 401) {
-      const refreshToken = localStorage.getItem("refreshToken");
-      if (refreshToken) {
-        try {
-          const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api/"}token/refresh/`, {
-            refresh: refreshToken,
-          });
-          localStorage.setItem("accessToken", res.data.access);
-          error.config.headers.Authorization = `Bearer ${res.data.access}`;
-          return api(error.config);
-        } catch (refreshError) {
-          console.error("Refresh token expired. Please log in again.");
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
-        }
+    const originalRequest = error.config as typeof error.config & { _retry?: boolean };
+    if (error.response?.status === 401 && !originalRequest?._retry) {
+      originalRequest._retry = true;
+      const newAccessToken = await refreshAccessToken();
+      if (newAccessToken) {
+        originalRequest.headers = originalRequest.headers ?? {};
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return api(originalRequest);
       }
     }
     return Promise.reject(error);
@@ -44,7 +96,17 @@ api.interceptors.response.use(
 
 // Auth endpoints
 export const login = async (email: string, password: string) => {
-  const response = await api.post('/token/', { email, password });
+  const response = await api.post<LoginResponse>("/token/", { email, password });
+  return response.data;
+};
+
+export const getMe = async () => {
+  const response = await api.get<MeResponse>("/me");
+  return response.data;
+};
+
+export const getHealth = async () => {
+  const response = await api.get("/health");
   return response.data;
 };
 
@@ -108,14 +170,14 @@ export const createMaintenanceRequest = async (data: {
   status: string;
   priority: string;
 }) => {
-  const token = localStorage.getItem("accessToken"); // Retrieve token from storage
+  const token = getAccessToken();
 
   if (!token) {
     throw new Error("No authentication token found. Please log in.");
   }
 
   try {
-    const response = await api.post("/api/maintenance-requests/", data, {
+    const response = await api.post("/maintenance-requests/", data, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",

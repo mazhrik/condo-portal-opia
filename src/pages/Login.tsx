@@ -1,81 +1,42 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { signInWithEmail, signInWithGoogle, resetPassword } from "@/utils/supabase";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { FcGoogle } from "react-icons/fc";
-import { FaFacebook, FaApple } from "react-icons/fa";
 import { Eye, EyeOff } from "lucide-react";
-import api from "@/utils/api";
+import { useAuth } from "@/context/AuthContext";
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login, isSubmitting, isAuthenticated, isLoading } = useAuth();
+
+  const locationState = location.state as { from?: { pathname?: string } } | null;
+  const redirectTo = locationState?.from?.pathname ?? "/dashboard";
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      navigate(redirectTo, { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate, redirectTo]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    console.log("Attempting login with:", { email, password });
 
     try {
-      const response = await api.post("/token/", {
-        username: email,  // Use "email" instead of "username"
-        password,
-      });
-
-      console.log("Login response:", response.data);
-
-      localStorage.setItem("accessToken", response.data.access);
-      localStorage.setItem("refreshToken", response.data.refresh);
-
-      toast.success("Successfully logged in!");
-
-
-
-      // Determine redirection based on user role from response
-      if (response.data.is_superuser || response.data.is_staff) {
-        console.log("Admin/Staff detected, redirecting to /admin");
-        navigate("/admin");
-      } else {
-        console.log("Resident detected, redirecting to /resident");
-        navigate("/resident");
-      }
+      await login(email, password);
+      toast.success("Successfully logged in.");
+      navigate(redirectTo, { replace: true });
     } catch (error: any) {
-      console.error("Login error:", error.response?.data || error.message);
-
-      toast.error(
-        error.response?.data?.detail || "Invalid credentials. Please try again."
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-
-  const handleGoogleLogin = async () => {
-    try {
-      await signInWithGoogle();
-      toast.success("Redirecting to Google...");
-    } catch (error: any) {
-      toast.error("Failed to initialize Google Sign In");
-    }
-  };
-
-  const handleForgotPassword = async () => {
-    if (!email) {
-      toast.error("Please enter your email address first");
-      return;
-    }
-    try {
-      await resetPassword(email);
-      toast.success("Password reset link sent to your email");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to send reset link");
+      const message =
+        error?.response?.data?.error?.message ||
+        error?.response?.data?.detail ||
+        "Invalid credentials. Please try again.";
+      toast.error(message);
     }
   };
 
@@ -131,61 +92,13 @@ const Login = () => {
               </button>
             </div>
 
-            <div className="flex justify-between items-center">
-              <label className="flex items-center space-x-2 text-sm text-gray-300">
-                <input type="checkbox" className="rounded border-gray-400" />
-                <span>Remember Me</span>
-              </label>
-              <button
-                type="button"
-                onClick={handleForgotPassword}
-                className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                Forgot Password?
-              </button>
-            </div>
-
             <Button
               type="submit"
               className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white h-12"
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
-              {isLoading ? "Signing in..." : "Sign In"}
+              {isSubmitting ? "Signing in..." : "Sign In"}
             </Button>
-
-            <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-500/30"></div>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-transparent px-2 text-gray-400">Or continue with</span>
-              </div>
-            </div>
-
-            <div className="flex gap-4 justify-center">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleGoogleLogin}
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-12 h-12 p-0"
-              >
-                <FcGoogle className="h-5 w-5" />
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-12 h-12 p-0"
-              >
-                <FaFacebook className="h-5 w-5 text-blue-500" />
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-12 h-12 p-0"
-              >
-                <FaApple className="h-5 w-5" />
-              </Button>
-            </div>
           </form>
         </CardContent>
       </Card>
