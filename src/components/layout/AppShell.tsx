@@ -25,9 +25,9 @@ const AppShell = () => {
               <Link to="/dashboard" className="hover:text-white">
                 Home
               </Link>
-              <span className="rounded-full border border-dashed border-white/30 px-3 py-1 text-xs text-white/50">
-                Navigation placeholder
-              </span>
+              <Link to="/announcements" className="hover:text-white">
+                Announcements
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-4">

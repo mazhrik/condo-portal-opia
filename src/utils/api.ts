@@ -37,6 +37,33 @@ export interface LoginResponse {
   is_superuser: boolean;
 }
 
+export interface Announcement {
+  id: number;
+  title: string;
+  content: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AnnouncementListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Announcement[];
+}
+
+export interface DashboardSummary {
+  announcements: {
+    active_count: number;
+    latest: Array<{
+      id: number;
+      title: string;
+      created_at: string;
+    }>;
+  };
+}
+
 const baseURL = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
 const api = axios.create({
@@ -112,25 +139,39 @@ export const getHealth = async () => {
   return response.data;
 };
 
-// Announcement endpoints with error handling
-export const getAnnouncements = async () => {
-  try {
-    const response = await api.get('/announcements/');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching announcements:', error);
-    throw error;
-  }
+export const getDashboardSummary = async () => {
+  const response = await api.get<DashboardSummary>("/dashboard/summary");
+  return response.data;
 };
 
-export const createAnnouncement = async (data: any) => {
-  try {
-    const response = await api.post('/announcements/', data);
-    return response.data;
-  } catch (error) {
-    console.error('Error creating announcement:', error);
-    throw error;
-  }
+// Announcement endpoints
+export const getAnnouncements = async (params?: { is_active?: boolean }) => {
+  const response = await api.get<AnnouncementListResponse>("/announcements/", {
+    params,
+  });
+  return response.data;
+};
+
+export const getAnnouncement = async (id: number | string) => {
+  const response = await api.get<Announcement>(`/announcements/${id}/`);
+  return response.data;
+};
+
+export const createAnnouncement = async (data: {
+  title: string;
+  content: string;
+  is_active?: boolean;
+}) => {
+  const response = await api.post<Announcement>("/announcements/", data);
+  return response.data;
+};
+
+export const updateAnnouncement = async (
+  id: number | string,
+  data: Partial<Pick<Announcement, "title" | "content" | "is_active">>
+) => {
+  const response = await api.patch<Announcement>(`/announcements/${id}/`, data);
+  return response.data;
 };
 
 // User endpoints

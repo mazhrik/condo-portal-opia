@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Announcements from "./pages/Announcements";
+import AnnouncementDetail from "./pages/AnnouncementDetail";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AppShell from "@/components/layout/AppShell";
 import { AuthProvider } from "@/context/AuthContext";
@@ -24,6 +26,8 @@ const App = () => (
             <Route element={<ProtectedRoute />}>
               <Route element={<AppShell />}>
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/announcements" element={<Announcements />} />
+                <Route path="/announcements/:id" element={<AnnouncementDetail />} />
               </Route>
             </Route>
             <Route path="*" element={<Navigate to="/login" replace />} />
