@@ -1,52 +1,36 @@
-# Frontend Contract
+# Frontend Contract (Phase 1 Active)
 
 ## Tech Stack
 - React + Vite + TypeScript
-- react-router-dom for routing
-- axios for HTTP
-- @tanstack/react-query for data fetching
+- react-router-dom
+- axios
+- @tanstack/react-query
 
-## Auth Storage (Phase 0)
-- Access token: in-memory only (cleared on refresh).
-- Refresh token: localStorage key `auth.refreshToken`.
-- User profile cache: react-query key `me`.
-
-## Auth Flow
-1. Login form submits to POST /api/token/ with email + password.
-2. Store refresh token in localStorage and access token in memory.
-3. Fetch /api/me and store in react-query cache.
-4. On 401 from protected requests, attempt a single refresh:
-   - POST /api/token/refresh/ with refresh token.
-   - If successful, retry the original request once.
-   - If refresh fails, clear tokens and redirect to /login.
-
-## Protected Routes
-- Use a central auth guard component.
-- If no access token and no refresh token, redirect to /login.
-- If refresh token exists, attempt refresh before rendering.
-
-## Routes (Phase Mapped)
-Phase 0
-- /login (public)
-- /dashboard (protected placeholder)
-
-Phase 1
+## Phase 1 Routes
+- /dashboard (protected)
 - /announcements (protected)
 - /announcements/:id (protected)
 
-Phase 2
-- /maintenance (protected)
+## Data Fetching Patterns
+- Use react-query for all network calls.
+- Cache keys:
+  - `announcements:list`
+  - `announcements:detail:{id}`
+  - `dashboard:summary`
+- Announcements list default filter `is_active=true` for residents.
+- Admin/Manager screens may toggle `is_active=false` for management views.
 
-Phase 3
-- /directory (role-gated)
+## Error and Loading States
+- List and detail pages show skeleton/loading state while fetching.
+- Errors render a standard inline error banner with retry button.
+- Dashboard widgets handle partial failures (render available widgets, show error state per widget).
 
 ## Role-aware UI
-- Admin/Manager: can access announcement admin actions.
-- Resident: read-only announcements.
-- Directory page hidden for resident role.
+- Admin/Manager: show create/edit/deactivate controls for announcements.
+- Resident: read-only announcements views.
 
-## API Client Expectations
-- Base URL: /api
-- Authorization header for authenticated calls.
-- Standard error handling using the API error shape.
-
+## FUTURE PHASE — DO NOT IMPLEMENT
+- File uploads
+- Notifications
+- Payments
+- Audit logs

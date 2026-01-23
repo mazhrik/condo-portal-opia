@@ -1,42 +1,37 @@
 # Condo Portal Rollout Phases
 
-> ACTIVE PHASE: Phase 0 — JWT Auth Hardening + RBAC + /api/me + Health + Protected Routes
+> ACTIVE PHASE: Phase 1 — Announcements + Dashboard
 
-## Phase 0 — JWT Auth Hardening + RBAC + /api/me + Health + Protected Routes (ACTIVE)
+## Phase 0 — JWT Auth Hardening + RBAC + /api/me + Health + Protected Routes (COMPLETE)
 Objective
 - Lock the authentication contract and role model so Frontend and Backend can implement without ambiguity.
 
-Included
-- Verify and document existing SimpleJWT configuration and endpoints.
-- Standardize login/refresh/logout flows for SPA.
-- Implement /api/me (user + role) as the bootstrap endpoint.
-- Implement /api/health for uptime and readiness checks.
-- Define RBAC baseline (Admin, Property Manager, Resident).
-- Protect frontend routes and centralize auth guard behavior.
-
-Excluded
-- Announcements, Maintenance Requests, Directory features.
+Completed Scope
+- JWT auth flow standardized (login/refresh/logout).
+- /api/me and /api/health contracts defined.
+- RBAC baseline defined (Admin, Property Manager, Resident).
+- Frontend protected routes and auth guard behavior defined.
 
 Exit Criteria
-- Login, refresh, and logout flows work end-to-end.
-- /api/me returns the correct role and profile data.
-- RBAC produces expected 401/403 behavior across protected endpoints.
+- Met and approved.
 
-## Phase 1 — Announcements + Dashboard
+## Phase 1 — Announcements + Dashboard (ACTIVE)
 Objective
-- Deliver announcements with a lightweight dashboard summary.
+- Deliver announcements and a lightweight dashboard summary for residents and staff.
 
 Included
-- Announcements list/detail for residents.
-- Admin/Manager create/update/deactivate announcements.
-- Dashboard widgets (latest announcements, counts).
+- Announcements CRUD (role-gated).
+- Announcements list/detail views for residents.
+- Dashboard summary endpoint and UI widgets.
 
 Excluded
 - Maintenance requests, directory, buildings/units.
+- File uploads, notifications, payments, audit logs (FUTURE PHASE — DO NOT IMPLEMENT).
 
 Exit Criteria
 - Residents can read active announcements.
-- Admin/Manager can manage announcements.
+- Admin/Manager can create/update/deactivate announcements.
+- Dashboard widgets render using summary endpoint.
 
 ## Phase 2 — Maintenance Requests
 Objective
@@ -71,8 +66,8 @@ Objective
 - Expand platform capabilities after core phases are stable.
 
 Included
-- FUTURE PHASE — DO NOT IMPLEMENT: Payments, document uploads, notifications, audit logs, analytics.
-- FUTURE PHASE — DO NOT IMPLEMENT: Advanced integrations (SMS/email, vendor portals).
+- FUTURE PHASE — DO NOT IMPLEMENT: File uploads, notifications, payments, audit logs.
+- FUTURE PHASE — DO NOT IMPLEMENT: Analytics and advanced integrations.
 
 Exit Criteria
 - Defined when Phase 4 is explicitly activated.
