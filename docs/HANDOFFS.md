@@ -1,25 +1,19 @@
-# Handoffs
+# Handoffs (Append-Only)
 
 ## 2026-01-23
-- Branch/PR: work
-- Endpoints completed: `/api/health/`, `/api/me/`, `/api/auth/login/`, `/api/auth/logout/`, `/api/token/refresh/`, `/api/token/`
-- How to run locally:
-  - `python -m venv .venv && source .venv/bin/activate`
-  - `pip install -r requirements.txt`
-  - `python manage.py migrate`
-  - `python manage.py runserver`
-  - `python manage.py test`
-- Known gaps/blockers:
-  - Source-of-truth docs (PHASES/API_CONTRACT/PRD/ARCHITECTURE) were not found in the repo at expected paths.
+**Decisions**
+- Active phase set to Phase 0: Foundation & Auth Hardening.
+- JWT auth endpoints confirmed as `/api/token/` and `/api/token/refresh/`.
+- Token storage strategy chosen: access token in memory, refresh token in localStorage.
+- `/api/me` endpoint required to return user + role.
+- Roles defined: Admin (superuser/staff), Property Manager (Staff profile), Resident (Resident profile).
+- dj-rest-auth endpoints are installed but not wired; no implementation until URLs are added.
 
-## 2026-01-23
-- Branch/PR: work
-- Endpoints completed: `/api/health/`, `/api/me/`, `/api/auth/login/`, `/api/auth/logout/`, `/api/token/refresh/`, `/api/token/`
-- How to run locally:
-  - `python -m venv .venv && source .venv/bin/activate`
-  - `pip install -r requirements.txt`
-  - `python manage.py migrate`
-  - `python manage.py runserver`
-  - `python manage.py test`
-- Known gaps/blockers:
-  - Source-of-truth docs (PHASES/API_CONTRACT/PRD/ARCHITECTURE) were not found in the repo at expected paths.
+**Assumptions**
+- DRF defaults require JWT auth and authenticated access for API endpoints.
+- Pagination will be standardized as limit/offset when Phase 0 work is implemented.
+
+**Ready for BE/FE/QA**
+- Backend: implement `/api/me`, RBAC rules, pagination, and ensure auth endpoints match contract.
+- Frontend: implement token handling, auth guard, and refresh flow.
+- QA: execute Phase 0 JWT + RBAC test plan.
