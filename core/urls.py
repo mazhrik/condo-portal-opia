@@ -1,17 +1,26 @@
 
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import (
-    ResidentViewSet, MaintenanceRequestViewSet, PaymentViewSet,
-    AmenityViewSet, AmenityBookingViewSet, ParkingSpotViewSet,
-    VisitorParkingViewSet, DocumentViewSet, ForumPostViewSet,
-    ForumCommentViewSet, EmergencyContactViewSet, StaffViewSet,
-    AnnouncementViewSet
-)
-from .views import CustomTokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
-from django.urls import path, include
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+from .views import (
+    AmenityBookingViewSet,
+    AmenityViewSet,
+    AnnouncementViewSet,
+    CustomTokenObtainPairView,
+    DocumentViewSet,
+    EmergencyContactViewSet,
+    ForumCommentViewSet,
+    ForumPostViewSet,
+    HealthCheckView,
+    MaintenanceRequestViewSet,
+    MeView,
+    ParkingSpotViewSet,
+    PaymentViewSet,
+    ResidentViewSet,
+    StaffViewSet,
+    VisitorParkingViewSet,
+)
 
 
 router = DefaultRouter()
@@ -30,6 +39,9 @@ router.register(r'emergency-contacts', EmergencyContactViewSet)
 router.register(r'staff', StaffViewSet)
 
 urlpatterns = [
+    path('health/', HealthCheckView.as_view(), name='health'),
+    path('me/', MeView.as_view(), name='me'),
+    path('auth/', include('dj_rest_auth.urls')),
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('', include(router.urls)),  # Include your API endpoints
