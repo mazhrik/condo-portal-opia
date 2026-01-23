@@ -31,7 +31,7 @@ Known limitations or follow-ups:
 
 Date: 2026-01-23
 Phase: 2
-Branch + commit hash: main @ TBD
+Branch + commit hash: main @ 1bbc2b3
 Endpoints implemented:
 - GET /api/maintenance-requests/
 - POST /api/maintenance-requests/ (Resident)
