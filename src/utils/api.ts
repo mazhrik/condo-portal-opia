@@ -64,6 +64,36 @@ export interface DashboardSummary {
   };
 }
 
+export type MaintenanceStatus =
+  | "new"
+  | "in_review"
+  | "assigned"
+  | "in_progress"
+  | "completed"
+  | "closed";
+
+export type MaintenancePriority = "low" | "medium" | "high";
+
+export interface MaintenanceRequest {
+  id: number;
+  resident: number;
+  title: string;
+  description: string;
+  status: MaintenanceStatus;
+  priority: MaintenancePriority;
+  assigned_to: number | null;
+  completion_notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MaintenanceListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: MaintenanceRequest[];
+}
+
 const baseURL = import.meta.env.VITE_API_BASE_URL ?? "/api";
 
 const api = axios.create({
@@ -196,66 +226,44 @@ export const getVehicles = async () => {
   }
 };
 
-// Maintenance request endpoints with error handling
-export const getMaintenanceRequests = async () => {
-  try {
-    const response = await api.get('/maintenance-requests/');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching maintenance requests:', error);
-    throw error;
-  }
+export const getMaintenanceRequests = async (params?: {
+  status?: MaintenanceStatus;
+  priority?: MaintenancePriority;
+  assigned_to?: number;
+  resident_id?: number;
+  created_from?: string;
+  created_to?: string;
+  q?: string;
+}) => {
+  const response = await api.get<MaintenanceListResponse>("/maintenance-requests/", {
+    params,
+  });
+  return response.data;
+};
+
+export const getMaintenanceRequest = async (id: number | string) => {
+  const response = await api.get<MaintenanceRequest>(`/maintenance-requests/${id}/`);
+  return response.data;
 };
 
 export const createMaintenanceRequest = async (data: {
   title: string;
   description: string;
-  status: string;
-  priority: string;
+  priority: MaintenancePriority;
 }) => {
-  const token = getAccessToken();
-
-  if (!token) {
-    throw new Error("No authentication token found. Please log in.");
-  }
-
-  try {
-    const response = await api.post("/maintenance-requests/", data, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-    return response.data;
-  } catch (error: any) {
-    if (error.response) {
-      console.error("API Error:", error.response.data);
-      throw new Error(error.response.data.detail || "Something went wrong.");
-    } else {
-      console.error("Request Error:", error.message);
-      throw new Error("Failed to connect to the server.");
-    }
-  }
+  const response = await api.post<MaintenanceRequest>("/maintenance-requests/", data);
+  return response.data;
 };
 
-export const updateMaintenanceRequest = async (id: number, data: any) => {
-  try {
-    const response = await api.put(`/maintenance-requests/${id}/`, data);
-    return response.data;
-  } catch (error) {
-    console.error('Error updating maintenance request:', error);
-    throw error;
-  }
-};
-
-export const updateMaintenanceStatus = async (id: number, status: string) => {
-  try {
-    const response = await api.post(`/maintenance-requests/${id}/update_status/`, { status });
-    return response.data;
-  } catch (error) {
-    console.error('Error updating maintenance status:', error);
-    throw error;
-  }
+export const updateMaintenanceRequest = async (
+  id: number | string,
+  data: Partial<Pick<MaintenanceRequest, "status" | "assigned_to" | "completion_notes">>
+) => {
+  const response = await api.patch<MaintenanceRequest>(
+    `/maintenance-requests/${id}/`,
+    data
+  );
+  return response.data;
 };
 
 // Amenity endpoints

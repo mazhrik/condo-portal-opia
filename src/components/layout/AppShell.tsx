@@ -28,6 +28,14 @@ const AppShell = () => {
               <Link to="/announcements" className="hover:text-white">
                 Announcements
               </Link>
+              <Link to="/maintenance" className="hover:text-white">
+                Maintenance
+              </Link>
+              {me?.role === "admin" || me?.role === "manager" ? (
+                <Link to="/maintenance/all" className="hover:text-white">
+                  All Requests
+                </Link>
+              ) : null}
             </nav>
           </div>
           <div className="flex items-center gap-4">

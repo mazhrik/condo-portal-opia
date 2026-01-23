@@ -7,6 +7,10 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Announcements from "./pages/Announcements";
 import AnnouncementDetail from "./pages/AnnouncementDetail";
+import MaintenanceList from "./pages/maintenance/MaintenanceList";
+import MaintenanceNew from "./pages/maintenance/MaintenanceNew";
+import MaintenanceDetail from "./pages/maintenance/MaintenanceDetail";
+import MaintenanceAll from "./pages/maintenance/MaintenanceAll";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AppShell from "@/components/layout/AppShell";
 import { AuthProvider } from "@/context/AuthContext";
@@ -28,6 +32,10 @@ const App = () => (
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/announcements" element={<Announcements />} />
                 <Route path="/announcements/:id" element={<AnnouncementDetail />} />
+                <Route path="/maintenance" element={<MaintenanceList />} />
+                <Route path="/maintenance/new" element={<MaintenanceNew />} />
+                <Route path="/maintenance/all" element={<MaintenanceAll />} />
+                <Route path="/maintenance/:id" element={<MaintenanceDetail />} />
               </Route>
             </Route>
             <Route path="*" element={<Navigate to="/login" replace />} />
