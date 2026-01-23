@@ -325,11 +325,11 @@ class MaintenanceRequestModelTest(TestCase):
             resident=self.resident,
             title='Leaky Faucet',
             description='Kitchen faucet is dripping',
-            status='pending',
+            status='new',
             priority='medium'
         )
         self.assertEqual(request.title, 'Leaky Faucet')
-        self.assertEqual(request.status, 'pending')
+        self.assertEqual(request.status, 'new')
         self.assertEqual(request.priority, 'medium')
     
     def test_maintenance_request_assignment(self):
@@ -338,17 +338,17 @@ class MaintenanceRequestModelTest(TestCase):
             resident=self.resident,
             title='Leaky Faucet',
             description='Kitchen faucet is dripping',
-            status='pending',
+            status='new',
             priority='high'
         )
         
         # Assign to staff
         request.assigned_to = self.staff
-        request.status = 'in_progress'
+        request.status = 'assigned'
         request.save()
         
         self.assertEqual(request.assigned_to, self.staff)
-        self.assertEqual(request.status, 'in_progress')
+        self.assertEqual(request.status, 'assigned')
     
     def test_maintenance_request_completion(self):
         """Test completing a maintenance request"""
@@ -357,7 +357,8 @@ class MaintenanceRequestModelTest(TestCase):
             title='Leaky Faucet',
             description='Kitchen faucet is dripping',
             status='in_progress',
-            assigned_to=self.staff
+            assigned_to=self.staff,
+            priority='medium'
         )
         
         # Complete the request

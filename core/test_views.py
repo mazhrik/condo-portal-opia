@@ -374,6 +374,7 @@ class MaintenanceRequestViewSetTestCase(APITestCase):
         
         response = self.client.post('/api/maintenance-requests/', data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['status'], 'new')
         
         # Verify request was created
         self.assertTrue(
@@ -389,19 +390,20 @@ class MaintenanceRequestViewSetTestCase(APITestCase):
             resident=self.resident,
             title='Leaky Faucet',
             description='Kitchen faucet is dripping',
-            status='pending',
+            status='new',
             priority='medium'
         )
         
         refresh = RefreshToken.for_user(self.staff_user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
         
-        response = self.client.post(
-            f'/api/maintenance-requests/{request.id}/update_status/',
-            {'status': 'in_progress'}
+        response = self.client.patch(
+            f'/api/maintenance-requests/{request.id}/',
+            {'status': 'in_review'},
+            format='json'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
         # Verify status was updated
         request.refresh_from_db()
-        self.assertEqual(request.status, 'in_progress')
+        self.assertEqual(request.status, 'in_review')

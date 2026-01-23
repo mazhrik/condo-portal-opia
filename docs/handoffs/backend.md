@@ -28,3 +28,19 @@ Tests run:
 
 Known limitations or follow-ups:
 - Test warnings persist: urllib3 NotOpenSSLWarning (LibreSSL) and naive datetime RuntimeWarning for Event.date and Package.pickup_date.
+
+Date: 2026-01-23
+Phase: 2
+Branch + commit hash: main @ TBD
+Endpoints implemented:
+- GET /api/maintenance-requests/
+- POST /api/maintenance-requests/ (Resident)
+- GET /api/maintenance-requests/{id}/
+- PATCH /api/maintenance-requests/{id}/ (Manager/Admin)
+
+Tests run:
+- source backend_env/bin/activate && python manage.py migrate (OK; NotOpenSSLWarning from urllib3/LibreSSL)
+- source backend_env/bin/activate && python manage.py test (PASS; 63 tests; warnings for naive datetimes in Event.date and Package.pickup_date + NotOpenSSLWarning)
+
+Notes/blockers:
+- Test warnings persist: urllib3 NotOpenSSLWarning (LibreSSL) and naive datetime RuntimeWarning for Event.date and Package.pickup_date.

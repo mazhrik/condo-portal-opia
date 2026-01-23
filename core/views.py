@@ -3,9 +3,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
 from rest_framework.views import APIView
+from datetime import datetime, time
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from .models import MaintenanceRequest, Resident
-from .serializers import MaintenanceRequestSerializer
+from django.utils import timezone
+from django.utils.dateparse import parse_date, parse_datetime
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 
@@ -25,11 +27,12 @@ from .serializers import (
     ForumCommentSerializer, EmergencyContactSerializer, StaffSerializer,
     AnnouncementSerializer, PackageSerializer, PollSerializer,
     PollOptionSerializer, PollVoteSerializer, IncidentReportSerializer,
-    EventSerializer, ResidentProfileSerializer, StaffProfileSerializer
+    EventSerializer, ResidentProfileSerializer, StaffProfileSerializer,
+    MaintenanceRequestUpdateSerializer
 )
 from .permissions import IsAdminOrManager, IsResident
-from .pagination import AnnouncementPagination
-from .roles import ROLE_ADMIN, ROLE_PROPERTY_MANAGER, get_user_role
+from .pagination import AnnouncementPagination, MaintenanceRequestPagination
+from .roles import ROLE_ADMIN, ROLE_PROPERTY_MANAGER, ROLE_RESIDENT, get_user_role
 
 
 class ResidentViewSet(viewsets.ModelViewSet):
@@ -71,9 +74,12 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 class MaintenanceRequestViewSet(viewsets.ModelViewSet):
     serializer_class = MaintenanceRequestSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = MaintenanceRequestPagination
+    queryset = MaintenanceRequest.objects.all()
+    http_method_names = ["get", "post", "patch", "head", "options"]
 
     def get_permissions(self):
-        if self.action in ("update", "partial_update", "destroy", "update_status"):
+        if self.action in ("update", "partial_update"):
             return [IsAuthenticated(), IsAdminOrManager()]
         if self.action == "create":
             return [IsAuthenticated(), IsResident()]
@@ -81,32 +87,144 @@ class MaintenanceRequestViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if hasattr(user, 'staff'):
-            return MaintenanceRequest.objects.all().order_by('-created_at')
-        elif hasattr(user, 'resident'):
-            return MaintenanceRequest.objects.filter(resident=user.resident).order_by('-created_at')
+        role = get_user_role(user)
+        queryset = MaintenanceRequest.objects.all().order_by('-created_at')
+
+        if role in (ROLE_ADMIN, ROLE_PROPERTY_MANAGER):
+            if self.action == "list":
+                status_value = self.request.query_params.get("status")
+                priority_value = self.request.query_params.get("priority")
+                assigned_to = self.request.query_params.get("assigned_to")
+                resident_id = self.request.query_params.get("resident_id")
+                created_from = self.request.query_params.get("created_from")
+                created_to = self.request.query_params.get("created_to")
+                query = self.request.query_params.get("q")
+
+                if status_value:
+                    queryset = queryset.filter(status=status_value)
+                if priority_value:
+                    queryset = queryset.filter(priority=priority_value)
+                if assigned_to:
+                    try:
+                        queryset = queryset.filter(assigned_to_id=int(assigned_to))
+                    except ValueError:
+                        pass
+                if resident_id:
+                    try:
+                        queryset = queryset.filter(resident_id=int(resident_id))
+                    except ValueError:
+                        pass
+                if created_from:
+                    created_from_dt = self._parse_datetime_param(created_from, is_end=False)
+                    if created_from_dt:
+                        queryset = queryset.filter(created_at__gte=created_from_dt)
+                if created_to:
+                    created_to_dt = self._parse_datetime_param(created_to, is_end=True)
+                    if created_to_dt:
+                        queryset = queryset.filter(created_at__lte=created_to_dt)
+                if query:
+                    queryset = queryset.filter(
+                        Q(title__icontains=query) | Q(description__icontains=query)
+                    )
+            return queryset
+
+        if role == ROLE_RESIDENT and hasattr(user, "resident"):
+            return queryset.filter(resident=user.resident)
         return MaintenanceRequest.objects.none()
 
     def perform_create(self, serializer):
         resident = get_object_or_404(Resident, user=self.request.user)
         serializer.save(resident=resident)
 
-    @action(detail=True, methods=['post'])
-    def update_status(self, request, pk=None):
-        maintenance_request = self.get_object()
-        status_value = request.data.get('status')
+    def get_serializer_class(self):
+        if self.action in ("update", "partial_update"):
+            return MaintenanceRequestUpdateSerializer
+        return MaintenanceRequestSerializer
 
-        if status_value in dict(MaintenanceRequest.STATUS_CHOICES):
-            serializer = self.get_serializer(
-                maintenance_request,
-                data={"status": status_value, "completion_notes": request.data.get("completion_notes")},
-                partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data)
+    def update(self, request, *args, **kwargs):
+        return self._update_request(request, *args, **kwargs)
 
-        return Response({"error": "Invalid status"}, status=status.HTTP_400_BAD_REQUEST) 
+    def partial_update(self, request, *args, **kwargs):
+        return self._update_request(request, *args, **kwargs)
+
+    def _update_request(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        if "status" in serializer.validated_data:
+            status_value = serializer.validated_data["status"]
+            transition_error = self._validate_transition(request.user, instance.status, status_value)
+            if transition_error:
+                return Response(
+                    {
+                        "error": {
+                            "code": "invalid_transition",
+                            "message": transition_error["message"],
+                            "details": transition_error["details"],
+                        }
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            if status_value == "completed":
+                completion_notes = serializer.validated_data.get("completion_notes")
+                if not completion_notes:
+                    return Response(
+                        {
+                            "error": {
+                                "code": "completion_notes_required",
+                                "message": "Completion notes are required when completing a request.",
+                                "details": {"status": "completed"},
+                            }
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+        serializer.save()
+        return Response(serializer.data)
+
+    def _validate_transition(self, user, current_status, next_status):
+        if current_status == next_status:
+            return None
+
+        role = get_user_role(user)
+        if next_status == "closed" and role == ROLE_ADMIN:
+            return None
+
+        transitions = {
+            "new": {"in_review"},
+            "in_review": {"assigned"},
+            "assigned": {"in_progress"},
+            "in_progress": {"completed"},
+            "completed": {"closed"},
+            "closed": set(),
+        }
+
+        allowed = transitions.get(current_status, set())
+        if next_status not in allowed:
+            return {
+                "message": f"Cannot transition from {current_status} to {next_status}.",
+                "details": {"from": current_status, "to": next_status},
+            }
+        return None
+
+    def _parse_datetime_param(self, value, *, is_end):
+        parsed = parse_datetime(value)
+        if parsed is None:
+            parsed_date = parse_date(value)
+            if parsed_date:
+                if is_end:
+                    parsed = datetime.combine(parsed_date, time.max)
+                else:
+                    parsed = datetime.combine(parsed_date, time.min)
+
+        if parsed is None:
+            return None
+
+        if timezone.is_naive(parsed):
+            return timezone.make_aware(parsed)
+        return parsed
 
 class PaymentViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentSerializer

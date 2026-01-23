@@ -40,61 +40,44 @@ class AnnouncementSerializer(serializers.ModelSerializer):
         )
 
 class MaintenanceRequestSerializer(serializers.ModelSerializer):
-    resident_name = serializers.SerializerMethodField()
-    assigned_to_name = serializers.SerializerMethodField()
+    class Meta:
+        model = MaintenanceRequest
+        fields = (
+            'id',
+            'resident',
+            'title',
+            'description',
+            'status',
+            'priority',
+            'assigned_to',
+            'completion_notes',
+            'created_at',
+            'updated_at',
+        )
+        read_only_fields = (
+            'resident',
+            'status',
+            'assigned_to',
+            'completion_notes',
+            'created_at',
+            'updated_at',
+        )
+        extra_kwargs = {
+            'priority': {'required': True},
+        }
+
+
+class MaintenanceRequestUpdateSerializer(serializers.ModelSerializer):
+    assigned_to = serializers.PrimaryKeyRelatedField(
+        queryset=Staff.objects.all(),
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = MaintenanceRequest
-        fields = '__all__'
-        read_only_fields = ['resident']
-
-    def get_resident_name(self, obj):
-        return f"{obj.resident.user.first_name} {obj.resident.user.last_name}"
-
-    def get_assigned_to_name(self, obj):
-        if obj.assigned_to:
-            return f"{obj.assigned_to.user.first_name} {obj.assigned_to.user.last_name}"
-        return None
-
-    def validate(self, attrs):
-        request = self.context.get("request")
-        user = getattr(request, "user", None)
-        instance = getattr(self, "instance", None)
-
-        # Enforce status transitions on updates
-        if instance and "status" in attrs:
-            from_status = instance.status
-            to_status = attrs["status"]
-            allowed = {
-                "new": {"in_review"},
-                "in_review": {"assigned"},
-                "assigned": {"in_progress"},
-                "in_progress": {"completed"},
-                "completed": {"closed"},
-                "closed": set(),
-            }
-
-            if from_status != to_status:
-                is_admin = bool(user and (user.is_superuser or user.is_staff))
-                if to_status == "closed" and is_admin:
-                    pass
-                elif to_status not in allowed.get(from_status, set()):
-                    raise serializers.ValidationError({
-                        "status": f"Cannot transition from {from_status} to {to_status}."
-                    })
-
-        if attrs.get("status") == "completed" and not attrs.get("completion_notes"):
-            raise serializers.ValidationError({
-                "completion_notes": "completion_notes is required when status is completed."
-            })
-
-        assigned_to = attrs.get("assigned_to")
-        if assigned_to and not isinstance(assigned_to, Staff):
-            raise serializers.ValidationError({
-                "assigned_to": "assigned_to must reference a staff user."
-            })
-
-        return attrs
+        fields = ('id', 'status', 'assigned_to', 'completion_notes', 'updated_at')
+        read_only_fields = ('id', 'updated_at')
 
 class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
