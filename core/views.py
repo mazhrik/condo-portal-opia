@@ -1,32 +1,47 @@
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from .models import MaintenanceRequest, Resident
-from .serializers import MaintenanceRequestSerializer
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.authtoken.models import Token
-
-from django.contrib.auth import authenticate
+from rest_framework import viewsets
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .models import (
-    Resident, MaintenanceRequest, Payment, Amenity, AmenityBooking,
-    ParkingSpot, VisitorParking, Document, ForumPost, ForumComment,
-    EmergencyContact, Staff, Announcement
+    Amenity,
+    AmenityBooking,
+    Announcement,
+    Document,
+    EmergencyContact,
+    ForumComment,
+    ForumPost,
+    MaintenanceRequest,
+    ParkingSpot,
+    Payment,
+    Resident,
+    Staff,
+    VisitorParking,
 )
+from .permissions import IsAdmin, IsAdminOrManager
+from .roles import get_user_role
 from .serializers import (
-    ResidentSerializer, MaintenanceRequestSerializer, PaymentSerializer,
-    AmenitySerializer, AmenityBookingSerializer, ParkingSpotSerializer,
-    VisitorParkingSerializer, DocumentSerializer, ForumPostSerializer,
-    ForumCommentSerializer, EmergencyContactSerializer, StaffSerializer,
-    AnnouncementSerializer
+    AmenityBookingSerializer,
+    AmenitySerializer,
+    AnnouncementSerializer,
+    DocumentSerializer,
+    EmergencyContactSerializer,
+    ForumCommentSerializer,
+    ForumPostSerializer,
+    MaintenanceRequestSerializer,
+    MeSerializer,
+    ParkingSpotSerializer,
+    PaymentSerializer,
+    ResidentSerializer,
+    StaffSerializer,
+    VisitorParkingSerializer,
 )
 
 class ResidentViewSet(viewsets.ModelViewSet):
     queryset = Resident.objects.all()
     serializer_class = ResidentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrManager]
 
 class AnnouncementViewSet(viewsets.ModelViewSet):
     queryset = Announcement.objects.filter(is_active=True)
@@ -48,21 +63,6 @@ class MaintenanceRequestViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         resident = get_object_or_404(Resident, user=self.request.user)
         serializer.save(resident=resident)
-
-from rest_framework import status
-
-@action(detail=True, methods=['post'])
-def update_status(self, request, pk=None):
-    maintenance_request = self.get_object()
-    status_value = request.data.get('status')
-
-    if status_value in dict(MaintenanceRequest.STATUS_CHOICES):
-        maintenance_request.status = status_value
-        maintenance_request.save()
-        serializer = self.get_serializer(maintenance_request)
-        return Response(serializer.data)
-
-    return Response({"error": "Invalid status"}, status=status.HTTP_400_BAD_REQUEST) 
 
 class PaymentViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentSerializer
@@ -124,21 +124,21 @@ class EmergencyContactViewSet(viewsets.ModelViewSet):
 class StaffViewSet(viewsets.ModelViewSet):
     queryset = Staff.objects.all()
     serializer_class = StaffSerializer
+    permission_classes = [IsAdmin]
+
+
+class HealthCheckView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response({"status": "ok"})
+
+
+class MeView(APIView):
     permission_classes = [IsAuthenticated]
 
-class CustomAuthToken(ObtainAuthToken):
-    def post(self, request, *args, **kwargs):
-        email = request.data.get("email")
-        password = request.data.get("password")
-        
-        user = authenticate(username=email, password=password)  # Now using email
-        if user:
-            token, _ = Token.objects.get_or_create(user=user)
-            return Response({"token": token.key})
-        
-        return Response({"error": "Invalid credentials"}, status=400)
-from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializers import CustomTokenObtainPairSerializer
+    def get(self, request):
+        payload = {"user": request.user, "role": get_user_role(request.user)}
+        serializer = MeSerializer(payload)
+        return Response(serializer.data)
 
-class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
