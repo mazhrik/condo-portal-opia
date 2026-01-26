@@ -86,8 +86,46 @@ Evidence
 
 ## Phase 2 — Maintenance Requests
 ### Functional Tests
-- Resident can create a request and see only their own requests.
-- Manager/Admin can view all requests and update status.
+- Resident can create a request (required fields validation).
+- Resident can list own requests and view own detail.
+- Resident cannot view other residents’ requests (403/404 per contract).
+- Resident cannot update status or assignment (403).
+- Manager/Admin can list all requests (filters/pagination when provided).
+- Manager/Admin can view any request detail.
+- Manager/Admin can update status following allowed transitions.
+- Manager/Admin can assign/unassign staff (assigned_to must be staff).
+- Completion requires completion_notes when status set to completed.
+- Admin can close from any state.
+
+### Execution Results (2026-01-26)
+API Tests
+- PASS: Resident create required-fields validation (400 when missing description/priority).
+- PASS: Resident create request (201).
+- PASS: Resident list returns own requests only.
+- PASS: Resident detail allowed for own request; other resident detail blocked (404).
+- PASS: Resident status/assignment update blocked (403).
+- PASS: Manager/Admin list all requests (200) and filters work.
+- PASS: Manager/Admin detail allowed for any request (200).
+- PASS: Status transitions enforced (invalid transition returns 400 invalid_transition).
+- PASS: Assignment requires staff (400 on invalid assigned_to).
+- PASS: Completion requires notes (400 completion_notes_required; 200 with notes).
+- PASS: Admin can close from any state (200 closed).
+
+UI Tests
+- PASS: Resident create request form submits and appears in My Requests list.
+- PASS: Resident detail page shows status/priority and no admin controls.
+- PASS: Admin/Manager All Requests list loads.
+- FAIL: Admin/Manager maintenance detail does not show “Manage request” controls (cannot update status/assign). See docs/bugs/BUG-002.md.
+- PASS: Loading/error/empty states smoke on list pages.
+
+Regression sanity (light)
+- PASS: Login works.
+- PASS: Dashboard and Announcements load (smoke via UI navigation).
+
+Evidence
+- Tests: `backend_env/bin/python manage.py test core.tests.test_maintenance_requests`
+- Manual APIClient smoke: resident/manager/admin maintenance flows + transitions
+- UI smoke: Playwright on preview build (`npm run build` + `npm run preview`)
 
 ---
 

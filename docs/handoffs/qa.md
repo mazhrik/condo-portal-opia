@@ -41,3 +41,25 @@ Test data (local only; passwords set locally):
 - admin_phase1_ui@example.com (Admin)
 
 Phase 1 exit criteria verified.
+
+---
+
+Phase 2
+Date: 2026-01-26
+Branch: main
+Commit: 305fef400b7510528588559aa68f96e4759e9325
+QA Status: FAIL
+
+Bugs open:
+- docs/bugs/BUG-002.md (High)
+
+What was tested:
+- API: resident create/list/detail; other resident access blocked; resident update blocked
+- API: manager/admin list/detail; filters; status transitions; assignment; completion notes; admin close
+- UI: resident create + list + detail; admin/manager list and detail
+- Regression sanity: login, dashboard, announcements smoke
+
+Gaps:
+- Admin/Manager UI status update + assignment blocked by missing controls (see BUG-002)
+
+Phase 2 exit criteria not met.
