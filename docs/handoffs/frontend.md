@@ -47,3 +47,12 @@
   - Admin/Manager can change status (assignment if applicable) - PASS (new -> in_review)
   - Error + empty states render - PASS
 - Blockers: None
+
+## 2026-01-27
+- Phase: 2
+- Branch: main @ 4f380c7
+- BUG-002 fix: Manager/Admin now see Manage request card on maintenance detail; resident remains read-only; added MaintenanceDetail role-gating test
+- Manual E2E:
+  - Manager maintenance detail shows Manage request controls - PASS (preview build)
+  - Resident cannot see manage controls - PASS (preview build)
+- Notes: Verified preview build (`npm run build` + `npm run preview`) and added Vitest coverage for role gating.
