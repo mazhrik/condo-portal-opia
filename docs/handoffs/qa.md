@@ -82,3 +82,25 @@ What was tested:
 - Contract check: status transitions and completion_notes rules per docs/API_CONTRACT.md
 
 Phase 2 exit criteria not met.
+
+---
+
+Phase 2
+Date: 2026-01-27
+Branch: main
+Commit: 30742b437e193a1db2050f19815dfda884b5950d
+QA Status: FAIL
+
+Bugs open:
+- docs/bugs/BUG-002.md (High, Reopened)
+
+What was tested:
+- Retest BUG-002 preview repro: manager opens /maintenance/all -> Manage -> detail
+- UI role gating: resident does not see manage controls
+- API smoke: resident create + 403 on update; manager lifecycle transitions + assignment + completion notes; admin close
+- Frontend unit test: MaintenanceDetail.test.tsx (PASS)
+
+Notes:
+- Vitest passes but preview repro still fails to show Manage request controls.
+
+Phase 2 exit criteria not met.
