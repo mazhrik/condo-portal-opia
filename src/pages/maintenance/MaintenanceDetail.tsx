@@ -79,7 +79,8 @@ const MaintenanceDetail = () => {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const { data: me } = useMe();
-  const isStaff = me?.role === "admin" || me?.role === "manager";
+  const isStaff =
+    me?.role === "admin" || me?.role === "manager" || Boolean(me?.staff);
   const isAdmin = me?.role === "admin";
 
   const { data, isLoading, isError, refetch } = useQuery({
