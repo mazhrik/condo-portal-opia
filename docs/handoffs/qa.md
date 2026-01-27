@@ -63,3 +63,22 @@ Gaps:
 - Admin/Manager UI status update + assignment blocked by missing controls (see BUG-002)
 
 Phase 2 exit criteria not met.
+
+---
+
+Phase 2
+Date: 2026-01-27
+Branch: main
+Commit: 30742b437e193a1db2050f19815dfda884b5950d
+QA Status: FAIL
+
+Bugs open:
+- docs/bugs/BUG-002.md (High, Reopened)
+
+What was tested:
+- Tests: core.tests.test_maintenance_requests
+- API smoke: resident create + 403 on status update; manager lifecycle transitions + assignment + completion notes; admin close
+- UI retest: manager maintenance detail still missing “Manage request” controls; resident cannot see admin controls
+- Contract check: status transitions and completion_notes rules per docs/API_CONTRACT.md
+
+Phase 2 exit criteria not met.

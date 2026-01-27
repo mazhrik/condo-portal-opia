@@ -97,7 +97,7 @@ Evidence
 - Completion requires completion_notes when status set to completed.
 - Admin can close from any state.
 
-### Execution Results (2026-01-26)
+### Execution Results (2026-01-27 Retest)
 API Tests
 - PASS: Resident create required-fields validation (400 when missing description/priority).
 - PASS: Resident create request (201).
@@ -125,7 +125,7 @@ Regression sanity (light)
 Evidence
 - Tests: `backend_env/bin/python manage.py test core.tests.test_maintenance_requests`
 - Manual APIClient smoke: resident/manager/admin maintenance flows + transitions
-- UI smoke: Playwright on preview build (`npm run build` + `npm run preview`)
+- UI retest: Playwright on preview build (`npm run build` + `npm run preview`)
 
 ---
 
