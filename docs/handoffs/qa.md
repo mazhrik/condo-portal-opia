@@ -104,3 +104,39 @@ Notes:
 - Vitest passes but preview repro still fails to show Manage request controls.
 
 Phase 2 exit criteria not met.
+
+---
+
+Phase 2
+Date: 2026-01-27
+Branch: main
+Commit: 094a418
+QA Status: FAIL
+
+Bugs open:
+- docs/bugs/BUG-002.md (High, Reopened)
+
+What was tested:
+- Preview repro: manager /maintenance/all -> Manage (navigation stays on /maintenance/all)
+- Manage request card not present in DOM after click
+- Resident gating on detail (no Manage request card)
+
+Phase 2 exit criteria not met.
+
+---
+
+Phase 2
+Date: 2026-01-31
+Branch: main
+Commit: ab4b5b0
+QA Status: FAIL
+
+Bugs open:
+- docs/bugs/BUG-002.md (High, Reopened)
+
+What was tested:
+- Preview repro: manager /maintenance/all -> Manage (navigation stays on /maintenance/all)
+- Manage request card not present in DOM after click
+- Resident gating on detail (no Manage request card)
+
+Phase 2 exit criteria not met.

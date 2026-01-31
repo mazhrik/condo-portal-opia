@@ -97,7 +97,7 @@ Evidence
 - Completion requires completion_notes when status set to completed.
 - Admin can close from any state.
 
-### Execution Results (2026-01-27 Retest)
+### Execution Results (2026-01-31 Retest)
 API Tests
 - PASS: Resident create required-fields validation (400 when missing description/priority).
 - PASS: Resident create request (201).
@@ -115,7 +115,7 @@ UI Tests
 - PASS: Resident create request form submits and appears in My Requests list.
 - PASS: Resident detail page shows status/priority and no admin controls.
 - PASS: Admin/Manager All Requests list loads.
-- FAIL: Admin/Manager maintenance detail does not show “Manage request” controls (cannot update status/assign). See docs/bugs/BUG-002.md.
+- FAIL: Admin/Manager maintenance detail does not show “Manage request” controls and Manage click does not navigate to detail route. See docs/bugs/BUG-002.md.
 - PASS: Loading/error/empty states smoke on list pages.
 
 Regression sanity (light)
