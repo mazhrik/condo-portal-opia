@@ -56,3 +56,12 @@
   - Manager maintenance detail shows Manage request controls - PASS (preview build)
   - Resident cannot see manage controls - PASS (preview build)
 - Notes: Verified preview build (`npm run build` + `npm run preview`) and added Vitest coverage for role gating.
+
+## 2026-01-31
+- Phase: 2
+- Branch: main @ ba14fbe
+- BUG-002 fix: Manage button now navigates to maintenance detail route; manager/admin see Manage request card on detail
+- Manual E2E:
+  - /maintenance/all Manage navigates to detail in preview - PASS
+  - Manager sees Manage request card on detail - PASS (preview)
+- Notes: Integration test added for Manage navigation (MaintenanceAll.test.tsx).

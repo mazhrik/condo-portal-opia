@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   getMaintenanceRequests,
@@ -56,6 +56,7 @@ const priorityTone = (priority: MaintenanceRequest["priority"]) => {
 
 const MaintenanceAll = () => {
   const { data: me, isLoading: isMeLoading } = useMe();
+  const navigate = useNavigate();
   const isStaff = me?.role === "admin" || me?.role === "manager";
   const [status, setStatus] = useState<MaintenanceStatus | "all">("all");
   const [priority, setPriority] = useState<MaintenancePriority | "all">("all");
@@ -280,8 +281,16 @@ const MaintenanceAll = () => {
                       <span className="text-white/50">Resident #{request.resident}</span>
                     </div>
                   </div>
-                  <Button variant="outline" asChild>
-                    <Link to={`/maintenance/${request.id}`}>Manage</Link>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      navigate(`/maintenance/${request.id}`);
+                    }}
+                  >
+                    Manage
                   </Button>
                 </CardContent>
               </Card>
