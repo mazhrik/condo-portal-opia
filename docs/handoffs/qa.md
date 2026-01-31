@@ -140,3 +140,21 @@ What was tested:
 - Resident gating on detail (no Manage request card)
 
 Phase 2 exit criteria not met.
+
+---
+
+Phase 2
+Date: 2026-01-31
+Branch: main
+Commit: 05b17c8
+QA Status: FAIL
+
+Bugs open:
+- docs/bugs/BUG-002.md (High, Reopened)
+
+What was tested:
+- Preview repro: manager /maintenance/all -> Manage (URL stays /maintenance/all)
+- Manage request card absent in DOM for manager (manageCount=0)
+- Resident gating: manageCount=0 on detail
+
+Phase 2 exit criteria not met.

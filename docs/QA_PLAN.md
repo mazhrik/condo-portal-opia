@@ -125,7 +125,7 @@ Regression sanity (light)
 Evidence
 - Tests: `backend_env/bin/python manage.py test core.tests.test_maintenance_requests`
 - Manual APIClient smoke: resident/manager/admin maintenance flows + transitions
-- UI retest: Playwright on preview build (`npm run build` + `npm run preview`) still fails for manager controls
+- UI retest: Playwright on preview build (`npm run build` + `npm run preview`) still fails for manager controls (navigation stays on /maintenance/all)
 - Frontend test: `npx vitest run src/pages/maintenance/__tests__/MaintenanceDetail.test.tsx` (PASS)
 
 ---
