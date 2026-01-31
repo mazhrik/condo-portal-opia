@@ -59,7 +59,7 @@
 
 ## 2026-01-31
 - Phase: 2
-- Branch: main @ ba14fbe
+- Branch: main @ 6fc0a77
 - BUG-002 fix: Manage button now navigates to maintenance detail route; manager/admin see Manage request card on detail
 - Manual E2E:
   - /maintenance/all Manage navigates to detail in preview - PASS
