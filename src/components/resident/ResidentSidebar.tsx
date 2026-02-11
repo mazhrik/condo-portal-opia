@@ -31,17 +31,17 @@ import {
 const menuItems = [
   {
     title: "Dashboard",
-    url: "/resident",
+    url: "/dashboard",
     icon: LayoutDashboard,
   },
   {
     title: "Announcements",
-    url: "/resident/announcements",
+    url: "/announcements",
     icon: Bell,
   },
   {
     title: "Maintenance",
-    url: "/resident/maintenance",
+    url: "/maintenance",
     icon: Building,
   },
   {
@@ -60,44 +60,9 @@ const menuItems = [
     icon: Calendar,
   },
   {
-    title: "Payments",
-    url: "/resident/payments",
-    icon: CreditCard,
-  },
-  {
-    title: "Parking",
-    url: "/resident/parking",
-    icon: Car,
-  },
-  {
-    title: "Documents",
-    url: "/resident/documents",
-    icon: FileText,
-  },
-  {
-    title: "Community",
-    url: "/resident/community",
-    icon: Users,
-  },
-  {
-    title: "Packages",
-    url: "/resident/packages",
-    icon: Box,
-  },
-  {
-    title: "Messages",
-    url: "/resident/messages",
-    icon: MessageSquare,
-  },
-  {
     title: "Polls",
     url: "/resident/polls",
     icon: Vote,
-  },
-  {
-    title: "Incidents",
-    url: "/resident/incidents",
-    icon: ShieldAlert,
   },
   {
     title: "Events",
