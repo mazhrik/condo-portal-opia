@@ -284,11 +284,7 @@ const MaintenanceAll = () => {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                      navigate(`/maintenance/${request.id}`);
-                    }}
+                    onClick={() => navigate(`/maintenance/${request.id}`)}
                   >
                     Manage
                   </Button>

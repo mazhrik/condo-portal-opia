@@ -274,6 +274,17 @@ export const updateMaintenanceRequest = async (
   return response.data;
 };
 
+export const updateMaintenanceStatus = async (
+    id: number | string,
+    status: MaintenanceStatus
+  ) => {
+    const response = await api.patch<MaintenanceRequest>(
+      `/maintenance-requests/${id}/`,
+      { status }
+    );
+    return response.data;
+  };
+
 // Amenity endpoints
 export const getAmenities = async () => {
   const response = await api.get('/amenities/');
