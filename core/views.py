@@ -1,8 +1,14 @@
 from rest_framework import viewsets, status
+import stripe
+import os
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
 from rest_framework.views import APIView
+from rest_framework.exceptions import PermissionDenied
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from dj_rest_auth.registration.views import SocialLoginView
 from datetime import datetime, time
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
@@ -17,7 +23,7 @@ from .models import (
     Resident, MaintenanceRequest, Payment, Amenity, AmenityBooking,
     ParkingSpot, VisitorParking, Document, ForumPost, ForumComment,
     EmergencyContact, Staff, Announcement, Package, Poll, PollOption, PollVote,
-    IncidentReport, Event
+    IncidentReport, Event, Notification, ArchitecturalRequest, Violation
 )
 
 from .serializers import (
@@ -28,10 +34,11 @@ from .serializers import (
     AnnouncementSerializer, PackageSerializer, PollSerializer,
     PollOptionSerializer, PollVoteSerializer, IncidentReportSerializer,
     EventSerializer, ResidentProfileSerializer, StaffProfileSerializer,
-    MaintenanceRequestUpdateSerializer
+    MaintenanceRequestUpdateSerializer, NotificationSerializer,
+    ArchitecturalRequestSerializer, ViolationSerializer
 )
-from .permissions import IsAdminOrManager, IsResident
-from .pagination import AnnouncementPagination, MaintenanceRequestPagination
+from .permissions import IsAdminOrManager, IsResident, IsStaffUser, IsResidentOrStaff, IsBoardMember
+from .pagination import AnnouncementPagination, MaintenanceRequestPagination, GenericPagination
 from .roles import ROLE_ADMIN, ROLE_PROPERTY_MANAGER, ROLE_RESIDENT, get_user_role
 
 
@@ -39,6 +46,7 @@ class ResidentViewSet(viewsets.ModelViewSet):
     queryset = Resident.objects.all()
     serializer_class = ResidentSerializer
     permission_classes = [IsAuthenticated, IsAdminOrManager]
+    pagination_class = GenericPagination
 
 class AnnouncementViewSet(viewsets.ModelViewSet):
     serializer_class = AnnouncementSerializer
@@ -231,8 +239,13 @@ class PaymentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        if hasattr(self.request.user, 'resident'):
-            return Payment.objects.filter(resident=self.request.user.resident)
+        user = self.request.user
+        # Allow staff/admin to see all payments
+        if hasattr(user, 'staff') or user.is_staff or user.is_superuser:
+            return Payment.objects.all().order_by('-date')
+            
+        if hasattr(user, 'resident'):
+            return Payment.objects.filter(resident=user.resident).order_by('-date')
         return Payment.objects.none()
 
 class AmenityViewSet(viewsets.ModelViewSet):
@@ -245,8 +258,12 @@ class AmenityBookingViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        if hasattr(self.request.user, 'resident'):
-            return AmenityBooking.objects.filter(resident=self.request.user.resident)
+        user = self.request.user
+        if hasattr(user, 'staff') or user.is_staff or user.is_superuser:
+            return AmenityBooking.objects.all().order_by('-start_time')
+
+        if hasattr(user, 'resident'):
+            return AmenityBooking.objects.filter(resident=user.resident).order_by('-start_time')
         return AmenityBooking.objects.none()
 
 class ParkingSpotViewSet(viewsets.ModelViewSet):
@@ -259,8 +276,12 @@ class VisitorParkingViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        user = self.request.user
+        if hasattr(user, 'staff') or user.is_staff or user.is_superuser:
+            return VisitorParking.objects.all().order_by('-visit_date')
+
         if hasattr(self.request.user, 'resident'):
-            return VisitorParking.objects.filter(resident=self.request.user.resident)
+            return VisitorParking.objects.filter(resident=self.request.user.resident).order_by('-visit_date')
         return VisitorParking.objects.none()
 
 class DocumentViewSet(viewsets.ModelViewSet):
@@ -345,10 +366,7 @@ class PollViewSet(viewsets.ModelViewSet):
         if hasattr(self.request.user, 'staff'):
             serializer.save(created_by=self.request.user.staff)
         else:
-            # Fallback or error? For dev, assume first staff or create one?
-            # Or just let it fail if not staff.
-            # Ideally standard flow:
-            serializer.save(created_by=Staff.objects.first()) # Temporary fallback for dev if auth mapping issues
+            raise PermissionDenied("Only staff members can create polls.")
 
     @action(detail=True, methods=['post'])
     def vote(self, request, pk=None):
@@ -369,26 +387,59 @@ class PollViewSet(viewsets.ModelViewSet):
             return Response({"error": "Invalid option"}, status=status.HTTP_400_BAD_REQUEST)
 
         PollVote.objects.create(poll=poll, option=option, resident=resident)
-        return Response({"message": "Vote recorded successfully"})
+        
+        # Return updated poll data with vote counts
+        serializer = self.get_serializer(poll)
+        return Response({
+            "message": "Vote recorded successfully",
+            "poll": serializer.data
+        })
+
 
 class IncidentReportViewSet(viewsets.ModelViewSet):
     serializer_class = IncidentReportSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_permissions(self):
+        if self.action in ('update', 'partial_update'):
+            return [IsAuthenticated(), IsStaffUser()]
+        return [IsAuthenticated()]
+
     def get_queryset(self):
         user = self.request.user
+        role = get_user_role(user)
+        if role in (ROLE_ADMIN, ROLE_PROPERTY_MANAGER) or hasattr(user, 'staff'):
+            return IncidentReport.objects.all().order_by('-created_at')
         if hasattr(user, 'resident'):
-            return IncidentReport.objects.filter(resident=user.resident)
-        return IncidentReport.objects.all()
+            return IncidentReport.objects.filter(resident=user.resident).order_by('-created_at')
+        return IncidentReport.objects.none()
 
     def perform_create(self, serializer):
         resident = get_object_or_404(Resident, user=self.request.user)
         serializer.save(resident=resident)
 
 class EventViewSet(viewsets.ModelViewSet):
-    queryset = Event.objects.filter(is_active=True)
     serializer_class = EventSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ('create', 'update', 'partial_update', 'destroy'):
+            return [IsAuthenticated(), IsStaffUser()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        queryset = Event.objects.filter(is_active=True).order_by('date')
+        
+        # Filter for upcoming events
+        upcoming = self.request.query_params.get('upcoming')
+        if upcoming and upcoming.lower() in ('true', '1', 'yes'):
+            queryset = queryset.filter(date__gte=timezone.now())
+        
+        return queryset
+
+    def perform_create(self, serializer):
+        staff = get_object_or_404(Staff, user=self.request.user)
+        serializer.save(created_by=staff)
 
 
 class HealthView(APIView):
@@ -456,3 +507,186 @@ class DashboardSummaryView(APIView):
                 }
             }
         )
+
+
+class NotificationViewSet(viewsets.ModelViewSet):
+    serializer_class = NotificationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = Notification.objects.filter(user=self.request.user).order_by('-created_at')
+        unread = self.request.query_params.get('unread')
+        if unread and unread.lower() in ('true', '1', 'yes'):
+            queryset = queryset.filter(is_read=False)
+        return queryset
+
+    @action(detail=True, methods=['post'])
+    def mark_read(self, request, pk=None):
+        notification = self.get_object()
+        notification.is_read = True
+        notification.save()
+        return Response({'status': 'marked as read'})
+
+    @action(detail=False, methods=['post'])
+    def mark_all_read(self, request):
+        self.get_queryset().update(is_read=True)
+        return Response({'status': 'all marked as read'})
+
+
+class CreatePaymentIntentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+            if not stripe.api_key:
+                 return Response({"error": "Stripe not configured"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+            amount = request.data.get('amount')
+            currency = request.data.get('currency', 'usd')
+
+            if not amount:
+                return Response({"error": "Amount is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            intent = stripe.PaymentIntent.create(
+                amount=int(float(amount) * 100),  # Convert to cents
+                currency=currency,
+                metadata={'user_id': request.user.id}
+            )
+            return Response({'clientSecret': intent.client_secret})
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class StripeWebhookView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        payload = request.body
+        sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+        endpoint_secret = os.environ.get('STRIPE_WEBHOOK_SECRET')
+
+        if not endpoint_secret:
+             return Response({"error": "Webhook secret not configured"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+        try:
+            event = stripe.Webhook.construct_event(
+                payload, sig_header, endpoint_secret
+            )
+        except ValueError as e:
+            return Response(status=400)
+        except stripe.error.SignatureVerificationError as e:
+            return Response(status=400)
+
+        if event['type'] == 'payment_intent.succeeded':
+            payment_intent = event['data']['object']
+            # logic to record payment would go here
+            # user_id = payment_intent['metadata'].get('user_id')
+            pass
+
+        return Response(status=200)
+
+class ArchitecturalRequestViewSet(viewsets.ModelViewSet):
+    serializer_class = ArchitecturalRequestSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = GenericPagination
+
+    def get_queryset(self):
+        user = self.request.user
+        # Staff and Board see all
+        if hasattr(user, 'staff') or (hasattr(user, 'resident') and user.resident.is_board_member):
+            return ArchitecturalRequest.objects.all().order_by('-submitted_at')
+        # Residents see their own
+        if hasattr(user, 'resident'):
+            return ArchitecturalRequest.objects.filter(resident=user.resident).order_by('-submitted_at')
+        return ArchitecturalRequest.objects.none()
+
+    def perform_create(self, serializer):
+        resident = get_object_or_404(Resident, user=self.request.user)
+        serializer.save(resident=resident)
+
+    @action(detail=True, methods=['post', 'patch'], url_path='status', permission_classes=[IsAuthenticated, IsBoardMember])
+    def update_status(self, request, pk=None):
+        arc = self.get_object()
+        status_val = request.data.get('status')
+        if status_val not in ['approved', 'denied']:
+            return Response({'error': 'Invalid status'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        arc.status = status_val
+        arc.reviewed_at = timezone.now()
+        if hasattr(request.user, 'staff'):
+             arc.reviewed_by = request.user.staff
+        arc.board_comments = request.data.get('comment', '') or request.data.get('board_comments', '')
+        arc.save()
+        return Response({'status': status_val})
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsBoardMember])
+    def approve(self, request, pk=None):
+        return self.update_status(request, pk)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsBoardMember])
+    def deny(self, request, pk=None):
+        return self.update_status(request, pk)
+
+
+class ViolationViewSet(viewsets.ModelViewSet):
+    serializer_class = ViolationSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = GenericPagination
+
+    def get_permissions(self):
+        if self.action in ('create', 'update', 'partial_update', 'destroy'):
+            return [IsAuthenticated(), IsStaffUser()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Violation.objects.all().order_by('-logged_at')
+        
+        # Filtering
+        status_param = self.request.query_params.get('status')
+        if status_param:
+            queryset = queryset.filter(status=status_param)
+
+        resident_id = self.request.query_params.get('resident_id')
+        if resident_id:
+            queryset = queryset.filter(resident_id=resident_id)
+            
+        # Access control
+        if hasattr(user, 'staff') or (hasattr(user, 'resident') and user.resident.is_board_member):
+            return queryset
+        if hasattr(user, 'resident'):
+            return queryset.filter(resident=user.resident)
+        return Violation.objects.none()
+
+    def perform_create(self, serializer):
+        staff = get_object_or_404(Staff, user=self.request.user)
+        serializer.save(logged_by=staff)
+
+    @action(detail=False, methods=['get'])
+    def my(self, request):
+        if not hasattr(request.user, 'resident'):
+            return Response({'error': 'Not a resident'}, status=status.HTTP_400_BAD_REQUEST)
+        queryset = self.get_queryset().filter(resident=request.user.resident)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class BoardFinancialReportView(APIView):
+    permission_classes = [IsAuthenticated, IsBoardMember]
+
+    def get(self, request):
+        # Mock financial data for now
+        return Response({
+            "total_revenue": 150000.00,
+            "total_expenses": 45000.00,
+            "reserve_fund": 500000.00,
+            "outstanding_dues": 12000.00,
+            "last_updated": timezone.now()
+        })
+
+class GoogleLogin(SocialLoginView):
+    adapter_class = GoogleOAuth2Adapter
+    client_class = OAuth2Client
+    callback_url = "http://localhost:5173" # Setup as env var in production

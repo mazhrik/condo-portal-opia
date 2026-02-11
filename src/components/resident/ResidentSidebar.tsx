@@ -24,6 +24,8 @@ import {
   Vote,
   ShieldAlert,
   CalendarDays,
+  Hammer,
+  Ban,
 } from "lucide-react";
 
 const menuItems = [
@@ -41,6 +43,16 @@ const menuItems = [
     title: "Maintenance",
     url: "/resident/maintenance",
     icon: Building,
+  },
+  {
+    title: "ARC Requests",
+    url: "/resident/arc",
+    icon: Hammer,
+  },
+  {
+    title: "My Violations",
+    url: "/resident/violations",
+    icon: Ban,
   },
   {
     title: "Amenity Bookings",

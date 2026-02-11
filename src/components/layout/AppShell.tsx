@@ -31,11 +31,31 @@ const AppShell = () => {
               <Link to="/maintenance" className="hover:text-white">
                 Maintenance
               </Link>
-              {me?.role === "admin" || me?.role === "manager" ? (
-                <Link to="/maintenance/all" className="hover:text-white">
-                  All Requests
+              {me?.role === "resident" && (
+                <>
+                  <Link to="/resident/arc" className="hover:text-white">
+                    ARC Requests
+                  </Link>
+                  <Link to="/resident/violations" className="hover:text-white">
+                    My Violations
+                  </Link>
+                </>
+              )}
+              {(me?.role === "admin" || me?.role === "manager") && (
+                <>
+                  <Link to="/maintenance/all" className="hover:text-white">
+                    All Requests
+                  </Link>
+                  <Link to="/admin/violations" className="hover:text-white">
+                    Admin Portal
+                  </Link>
+                </>
+              )}
+              {(me?.role === "admin" || me?.role === "manager" || me?.resident?.is_board_member) && (
+                <Link to="/board" className="hover:text-white">
+                  Board Portal
                 </Link>
-              ) : null}
+              )}
             </nav>
           </div>
           <div className="flex items-center gap-4">

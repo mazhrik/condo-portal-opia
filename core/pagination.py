@@ -7,3 +7,7 @@ class AnnouncementPagination(PageNumberPagination):
 
 class MaintenanceRequestPagination(PageNumberPagination):
     page_size = 20
+
+
+class GenericPagination(PageNumberPagination):
+    page_size = 100

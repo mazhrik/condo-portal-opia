@@ -19,6 +19,8 @@ import {
   Vote,
   ShieldAlert,
   Calendar,
+  Ban,
+  Building,
 } from "lucide-react";
 
 const menuItems = [
@@ -63,9 +65,19 @@ const menuItems = [
     icon: ShieldAlert,
   },
   {
+    title: "Violations",
+    url: "/admin/violations",
+    icon: Ban,
+  },
+  {
     title: "Events",
     url: "/admin/events",
     icon: Calendar,
+  },
+  {
+    title: "Amenities",
+    url: "/admin/amenities",
+    icon: Building,
   },
 ];
 
@@ -80,7 +92,7 @@ export function AdminSidebar() {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <Link to={item.url} className="flex items-center gap-2">
+                    <Link to={item.url} className="flex items-center gap-2 p-2 rounded-md hover:bg-white/10 text-sidebar-foreground hover:text-sidebar-accent-foreground transition-colors w-full">
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </Link>

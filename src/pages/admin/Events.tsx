@@ -153,7 +153,7 @@ const Events = () => {
                                     </div>
                                     <CardDescription className="flex items-center mt-2">
                                         <Clock className="h-3 w-3 mr-1" />
-                                        {new Date(event.start_time).toLocaleString()}
+                                        {event.start_time ? new Date(event.start_time).toLocaleString() : 'N/A'}
                                     </CardDescription>
                                     <CardDescription className="flex items-center">
                                         <MapPin className="h-3 w-3 mr-1" />

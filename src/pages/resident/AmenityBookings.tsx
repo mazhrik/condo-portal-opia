@@ -110,11 +110,17 @@ const AmenityBookings = () => {
                           <SelectValue placeholder="Select an amenity" />
                         </SelectTrigger>
                         <SelectContent>
-                          {amenities?.map((amenity: Amenity) => (
-                            <SelectItem key={amenity.id} value={amenity.id.toString()}>
-                              {amenity.name}
-                            </SelectItem>
-                          ))}
+                          {amenities && amenities.length > 0 ? (
+                            amenities.map((amenity: Amenity) => (
+                              <SelectItem key={amenity.id} value={amenity.id.toString()}>
+                                {amenity.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <div className="p-2 text-sm text-gray-500 text-center">
+                              No amenities available. Please contact management.
+                            </div>
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -170,7 +176,7 @@ const AmenityBookings = () => {
                         </span>
                       </div>
                       <p className="text-sm text-gray-600">
-                        Date: {new Date(booking.date).toLocaleDateString()}
+                        Date: {booking.date ? new Date(booking.date).toLocaleDateString() : 'N/A'}
                       </p>
                       <p className="text-sm text-gray-600">
                         Time: {booking.start_time}

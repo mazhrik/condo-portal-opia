@@ -19,6 +19,7 @@ export interface MeResponse {
     unit_number: string;
     phone_number: string;
     move_in_date: string;
+    is_board_member: boolean;
   } | null;
   staff: {
     id: number;
@@ -156,6 +157,13 @@ api.interceptors.response.use(
 // Auth endpoints
 export const login = async (email: string, password: string) => {
   const response = await api.post<LoginResponse>("/token/", { email, password });
+  return response.data;
+};
+
+export const googleLogin = async (accessToken: string) => {
+  const response = await api.post<LoginResponse>("/auth/google/", {
+    access_token: accessToken,
+  });
   return response.data;
 };
 
@@ -325,6 +333,11 @@ export const createPayment = async (data: any) => {
   return response.data;
 };
 
+export const createPaymentIntent = async (amount: number) => {
+  const response = await api.post('/payments/create-intent/', { amount });
+  return response.data;
+};
+
 // Staff endpoints
 export const getStaffMembers = async () => {
   const response = await api.get('/staff/');
@@ -402,29 +415,87 @@ export const votePoll = async (pollId: number, optionId: number) => {
 
 // Incident Report endpoints
 export const getIncidentReports = async () => {
-    const response = await api.get('/incidents/');
-    return response.data;
+  const response = await api.get('/incidents/');
+  return response.data;
 };
 
 export const createIncidentReport = async (data: any) => {
-    // Check if data is FormData (for image upload)
-    const config = data instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
-    const response = await api.post('/incidents/', data, config);
-    return response.data;
+  // Check if data is FormData (for image upload)
+  const config = data instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
+  const response = await api.post('/incidents/', data, config);
+  return response.data;
 };
 
 export const updateIncidentReport = async (id: number, data: any) => {
-    const response = await api.patch(`/incidents/${id}/`, data);
-    return response.data;
+  const response = await api.patch(`/incidents/${id}/`, data);
+  return response.data;
 };
 
 // Event endpoints
 export const getEvents = async () => {
-    const response = await api.get('/events/');
-    return response.data;
+  const response = await api.get('/events/');
+  return response.data;
 };
 
 export const createEvent = async (data: any) => {
-    const response = await api.post('/events/', data);
-    return response.data;
+  const response = await api.post('/events/', data);
+  return response.data;
+};
+
+// Notification endpoints
+export const getNotifications = async (params?: { unread?: boolean }) => {
+  const response = await api.get('/notifications/', { params });
+  return response.data;
+};
+
+export const markNotificationAsRead = async (id: number) => {
+  const response = await api.patch(`/notifications/${id}/read/`);
+  return response.data;
+};
+
+export const markAllNotificationsAsRead = async () => {
+  const response = await api.post('/notifications/mark_all_read/');
+  return response.data;
+};
+
+// Architectural Request endpoints
+export const getArchitecturalRequests = async (params?: { status?: string }) => {
+  const response = await api.get('/architectural-requests/', { params });
+  return response.data;
+};
+
+export const createArchitecturalRequest = async (data: FormData) => {
+  const response = await api.post('/architectural-requests/', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return response.data;
+};
+
+export const updateArchitecturalRequestStatus = async (id: number, status: string, comment?: string) => {
+  const response = await api.patch(`/architectural-requests/${id}/status/`, { status, comment });
+  return response.data;
+};
+
+// Violation endpoints
+export const getViolations = async (params?: { resident_id?: number, status?: string }) => {
+  const response = await api.get('/violations/', { params });
+  return response.data;
+};
+
+export const createViolation = async (data: FormData) => {
+  const response = await api.post('/violations/', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return response.data;
+};
+
+export const getMyViolations = async () => {
+  const response = await api.get('/violations/my/');
+  return response.data;
+};
+
+// Board endpoints
+export const getFinancialSummary = async () => {
+  const response = await api.get('/board/financial-summary/');
+  return response.data;
 };

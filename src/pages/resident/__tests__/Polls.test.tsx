@@ -8,6 +8,9 @@ import * as api from '@/utils/api';
 vi.mock('@/utils/api', () => ({
     getPolls: vi.fn(),
     votePoll: vi.fn(),
+    getNotifications: vi.fn().mockResolvedValue([]),
+    markNotificationAsRead: vi.fn(),
+    markAllNotificationsAsRead: vi.fn(),
 }));
 
 // Mock the toast hook
@@ -25,11 +28,15 @@ const queryClient = new QueryClient({
     },
 });
 
+import { MemoryRouter } from 'react-router-dom';
+
 const renderComponent = () => {
     return render(
-        <QueryClientProvider client={queryClient}>
-            <Polls />
-        </QueryClientProvider>
+        <MemoryRouter>
+            <QueryClientProvider client={queryClient}>
+                <Polls />
+            </QueryClientProvider>
+        </MemoryRouter>
     );
 };
 

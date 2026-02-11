@@ -1,6 +1,11 @@
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
   return (
     <header className="flex justify-between items-center backdrop-blur-md bg-card/30 p-6 rounded-lg border border-primary/10">
       <div className="flex items-center gap-4">
@@ -20,10 +25,13 @@ const Header = () => {
         <Button variant="outline" className="border-primary/20 hover:border-primary/40">
           Settings
         </Button>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="border-primary/20 hover:border-primary/40"
-          onClick={() => window.location.href = "/"}
+          onClick={() => {
+            logout();
+            navigate("/login");
+          }}
         >
           Logout
         </Button>

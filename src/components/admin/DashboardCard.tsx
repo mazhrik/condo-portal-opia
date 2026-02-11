@@ -62,7 +62,7 @@ const DashboardCard = ({ icon: Icon, title, stats, actions }: DashboardCardProps
           )}
           <div className="space-y-2">
             {actions.primary && (
-              <Button 
+              <Button
                 className="w-full bg-primary/90 hover:bg-primary transition-colors duration-300"
                 onClick={() => handleAction(actions.primary!)}
               >
@@ -70,9 +70,9 @@ const DashboardCard = ({ icon: Icon, title, stats, actions }: DashboardCardProps
               </Button>
             )}
             {actions.secondary && (
-              <Button 
-                variant="outline" 
-                className="w-full border-primary/20 hover:border-primary/40 transition-colors duration-300"
+              <Button
+                variant="outline"
+                className="w-full border-primary/20 text-white hover:bg-white/10 hover:border-primary/40 transition-colors duration-300"
                 onClick={() => handleAction(actions.secondary!)}
               >
                 {actions.secondary.label}

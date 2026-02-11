@@ -7,6 +7,10 @@ class Resident(models.Model):
     unit_number = models.CharField(max_length=10)
     phone_number = models.CharField(max_length=15)
     move_in_date = models.DateField()
+    is_board_member = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} - Unit {self.unit_number}"
 
 class Announcement(models.Model):
     title = models.CharField(max_length=200)
@@ -157,11 +161,49 @@ class Package(models.Model):
     def __str__(self):
         return f"Package for {self.recipient} from {self.courier}"
 
+
+
 class Poll(models.Model):
     question = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     created_by = models.ForeignKey('Staff', on_delete=models.CASCADE)
+    is_board_only = models.BooleanField(default=False)
+
+class ArchitecturalRequest(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending Review'),
+        ('approved', 'Approved'),
+        ('denied', 'Denied'),
+    ]
+    
+    resident = models.ForeignKey('Resident', on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    attachments = models.FileField(upload_to='arc_requests/', blank=True, null=True)
+    board_comments = models.TextField(blank=True, null=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey('Staff', on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_arcs')
+
+class Violation(models.Model):
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('paid', 'Paid'),
+        ('appealed', 'Under Appeal'),
+        ('dismissed', 'Dismissed'),
+    ]
+    
+    resident = models.ForeignKey('Resident', on_delete=models.CASCADE)
+    rule_citation = models.CharField(max_length=200)  # e.g., "CC&R Section 4.2"
+    description = models.TextField()
+    photo_proof = models.ImageField(upload_to='violations/', blank=True, null=True)
+    fine_amount = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    logged_by = models.ForeignKey('Staff', on_delete=models.CASCADE)
+    logged_at = models.DateTimeField(auto_now_add=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
 
 class PollOption(models.Model):
     poll = models.ForeignKey(Poll, related_name='options', on_delete=models.CASCADE)
@@ -200,3 +242,28 @@ class Event(models.Model):
     created_by = models.ForeignKey('Staff', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ('maintenance', 'Maintenance'),
+        ('announcement', 'Announcement'),
+        ('package', 'Package'),
+        ('payment', 'Payment'),
+        ('event', 'Event'),
+        ('poll', 'Poll'),
+        ('incident', 'Incident'),
+        ('general', 'General'),
+    ]
+    
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='notifications')
+    message = models.TextField()
+    type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES, default='general')
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    related_object_id = models.IntegerField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.type} notification for {self.user.email}"

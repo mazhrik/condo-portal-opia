@@ -150,6 +150,9 @@ ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 
+REST_USE_JWT = True
+JWT_AUTH_COOKIE = 'jwt-auth'
+
 
 from datetime import timedelta
 

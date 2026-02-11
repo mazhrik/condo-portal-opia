@@ -6,6 +6,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useMe } from "@/hooks/useMe";
+import { GoogleLogin } from "@react-oauth/google";
+import { googleLogin } from "@/utils/api";
+import { setAccessToken, setRefreshToken } from "@/utils/auth";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -14,15 +18,39 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, isSubmitting, isAuthenticated, isLoading } = useAuth();
+  const { data: me } = useMe();
 
   const locationState = location.state as { from?: { pathname?: string } } | null;
   const redirectTo = locationState?.from?.pathname ?? "/dashboard";
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      navigate(redirectTo, { replace: true });
+    if (!isLoading && isAuthenticated && me) {
+      let targetPath = redirectTo;
+
+      // Override default redirect for admins to go to Admin Dashboard
+      if (redirectTo === "/dashboard" && (me.role === "admin" || me.role === "manager")) {
+        targetPath = "/admin";
+      }
+
+      navigate(targetPath, { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate, redirectTo]);
+  }, [isAuthenticated, isLoading, me, navigate, redirectTo]);
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    try {
+      if (credentialResponse.credential) {
+        const data = await googleLogin(credentialResponse.credential);
+        setAccessToken(data.access);
+        setRefreshToken(data.refresh);
+        // Force a hard reload to ensure AuthContext picks up the new token state
+        // This is a temporary solution until we expose a proper setAuth method in context
+        window.location.reload();
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Google Login failed. Please try again.");
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +58,7 @@ const Login = () => {
     try {
       await login(email, password);
       toast.success("Successfully logged in.");
-      navigate(redirectTo, { replace: true });
+      // Navigation handled by useEffect
     } catch (error: any) {
       const message =
         error?.response?.data?.error?.message ||
@@ -100,6 +128,29 @@ const Login = () => {
               {isSubmitting ? "Signing in..." : "Sign In"}
             </Button>
           </form>
+
+          <div className="mt-6">
+            <div className="relative mb-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-white/10" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-black/40 px-2 text-gray-400">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            <div className="flex justify-center w-full">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => toast.error("Login Failed")}
+                theme="filled_black"
+                shape="pill"
+                width="350"
+              />
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

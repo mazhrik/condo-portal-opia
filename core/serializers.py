@@ -5,7 +5,7 @@ from .models import (
     Resident, MaintenanceRequest, Payment, Amenity, AmenityBooking,
     ParkingSpot, VisitorParking, Document, ForumPost, ForumComment,
     EmergencyContact, Staff, Announcement, Package, Poll, PollOption, PollVote,
-    IncidentReport, Event
+    IncidentReport, Event, Notification, ArchitecturalRequest, Violation
 )
 
 
@@ -25,7 +25,7 @@ class ResidentSerializer(serializers.ModelSerializer):
 class ResidentProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Resident
-        fields = ('id', 'unit_number', 'phone_number', 'move_in_date')
+        fields = ('id', 'unit_number', 'phone_number', 'move_in_date', 'is_board_member')
 
 class AnnouncementSerializer(serializers.ModelSerializer):
     class Meta:
@@ -194,17 +194,57 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
 class PollOptionSerializer(serializers.ModelSerializer):
+    vote_count = serializers.SerializerMethodField()
+    
     class Meta:
         model = PollOption
-        fields = '__all__'
+        fields = ['id', 'poll', 'text', 'vote_count']
+    
+    def get_vote_count(self, obj):
+        return PollVote.objects.filter(option=obj).count()
 
 class PollSerializer(serializers.ModelSerializer):
     options = PollOptionSerializer(many=True, read_only=True)
-    
+    user_vote = serializers.SerializerMethodField()
+    vote_counts = serializers.SerializerMethodField()
+
     class Meta:
         model = Poll
+        fields = ['id', 'question', 'created_at', 'is_active', 'created_by', 'options', 'user_vote', 'vote_counts', 'is_board_only']
+        read_only_fields = ['created_by', 'created_at']
+
+    def get_user_vote(self, obj):
+        user = self.context['request'].user
+        if not hasattr(user, 'resident'):
+            return None
+        vote = PollVote.objects.filter(poll=obj, resident=user.resident).first()
+        return vote.option.id if vote else None
+
+    def get_vote_counts(self, obj):
+        counts = {}
+        for option in obj.options.all():
+            counts[option.id] = PollVote.objects.filter(poll=obj, option=option).count()
+        return counts
+
+class ArchitecturalRequestSerializer(serializers.ModelSerializer):
+    resident_name = serializers.CharField(source='resident.user.get_full_name', read_only=True)
+    unit_number = serializers.CharField(source='resident.unit_number', read_only=True)
+    reviewed_by_name = serializers.CharField(source='reviewed_by.user.get_full_name', read_only=True)
+
+    class Meta:
+        model = ArchitecturalRequest
         fields = '__all__'
-        read_only_fields = ['created_by']
+        read_only_fields = ['resident', 'submitted_at', 'status', 'reviewed_at', 'reviewed_by', 'board_comments']
+
+class ViolationSerializer(serializers.ModelSerializer):
+    resident_name = serializers.CharField(source='resident.user.get_full_name', read_only=True)
+    unit_number = serializers.CharField(source='resident.unit_number', read_only=True)
+    logged_by_name = serializers.CharField(source='logged_by.user.get_full_name', read_only=True)
+
+    class Meta:
+        model = Violation
+        fields = '__all__'
+        read_only_fields = ['logged_by', 'logged_at', 'resolved_at']
 
 class PollVoteSerializer(serializers.ModelSerializer):
     class Meta:
@@ -218,12 +258,29 @@ class PollVoteSerializer(serializers.ModelSerializer):
         ]
 
 class IncidentReportSerializer(serializers.ModelSerializer):
+    resident_name = serializers.SerializerMethodField()
+    
     class Meta:
         model = IncidentReport
         fields = '__all__'
         read_only_fields = ['resident']
+    
+    def get_resident_name(self, obj):
+        return f"{obj.resident.user.first_name} {obj.resident.user.last_name}"
 
 class EventSerializer(serializers.ModelSerializer):
+    created_by_name = serializers.SerializerMethodField()
+    
     class Meta:
         model = Event
         fields = '__all__'
+        read_only_fields = ['created_by']
+    
+    def get_created_by_name(self, obj):
+        return f"{obj.created_by.user.first_name} {obj.created_by.user.last_name}"
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ['id', 'user', 'message', 'type', 'is_read', 'created_at', 'related_object_id']
+        read_only_fields = ['user', 'created_at']
