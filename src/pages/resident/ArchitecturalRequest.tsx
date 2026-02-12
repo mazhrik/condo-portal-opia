@@ -18,6 +18,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { formatToUserTimezone } from "@/utils/date";
 
 const ArchitecturalRequest = () => {
     const { toast } = useToast();
@@ -128,7 +129,7 @@ const ArchitecturalRequest = () => {
                                 <CardContent>
                                     <p className="text-sm text-muted-foreground mb-4">{req.description}</p>
                                     <div className="text-xs text-muted-foreground flex gap-4">
-                                        <span>Submitted: {req.submitted_at ? new Date(req.submitted_at).toLocaleDateString() : 'N/A'}</span>
+                                        <span>Submitted: {req.submitted_at ? formatToUserTimezone(req.submitted_at) : 'N/A'}</span>
                                         {req.attachment && (
                                             <a href={req.attachment} target="_blank" rel="noreferrer" className="flex items-center hover:underline text-primary">
                                                 <FileText className="w-3 h-3 mr-1" /> View Attachment

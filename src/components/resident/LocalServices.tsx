@@ -6,6 +6,14 @@ import axios from "axios";
 
 const API_URL = 'http://localhost:8000/api';
 
+interface Business {
+    id: number;
+    name: string;
+    address: string;
+    rating: number;
+    phone_number: string;
+}
+
 const LocalServices = () => {
   const { data: weather } = useQuery({
     queryKey: ['weather'],
@@ -15,7 +23,7 @@ const LocalServices = () => {
     }
   });
 
-  const { data: restaurants } = useQuery({
+  const { data: restaurants } = useQuery<Business[]>({
     queryKey: ['businesses', 'restaurant'],
     queryFn: async () => {
       const response = await axios.get(`${API_URL}/local-businesses/nearby/?type=restaurant`);
@@ -23,7 +31,7 @@ const LocalServices = () => {
     }
   });
 
-  const { data: cafes } = useQuery({
+  const { data: cafes } = useQuery<Business[]>({
     queryKey: ['businesses', 'cafe'],
     queryFn: async () => {
       const response = await axios.get(`${API_URL}/local-businesses/nearby/?type=cafe`);
@@ -94,7 +102,7 @@ const LocalServices = () => {
             </TabsList>
             <TabsContent value="restaurants">
               <div className="grid gap-4">
-                {restaurants?.map((restaurant: any) => (
+                {restaurants?.map((restaurant: Business) => (
                   <div key={restaurant.id} className="flex justify-between items-center p-4 border rounded-lg">
                     <div>
                       <h3 className="font-semibold">{restaurant.name}</h3>
@@ -110,7 +118,7 @@ const LocalServices = () => {
             </TabsContent>
             <TabsContent value="cafes">
               <div className="grid gap-4">
-                {cafes?.map((cafe: any) => (
+                {cafes?.map((cafe: Business) => (
                   <div key={cafe.id} className="flex justify-between items-center p-4 border rounded-lg">
                     <div>
                       <h3 className="font-semibold">{cafe.name}</h3>

@@ -1,6 +1,6 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import Header from "@/components/admin/Header";
+import { Header } from "@/components/admin/Header";
 import DashboardGrid from "@/components/admin/DashboardGrid";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";

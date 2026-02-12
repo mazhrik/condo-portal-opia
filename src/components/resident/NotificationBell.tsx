@@ -15,21 +15,25 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
+interface Notification {
+    id: number;
+    is_read: boolean;
+    title: string;
+    message: string;
+    created_at: string;
+}
+
 export const NotificationBell = () => {
     const queryClient = useQueryClient();
     const [isOpen, setIsOpen] = useState(false);
 
-    const { data: notifications = [], isLoading } = useQuery({
+    const { data: notifications = [], isLoading } = useQuery<Notification[]>({
         queryKey: ['notifications'],
-        queryFn: () => getNotifications({ unread: true }), // Initially fetch unread or all? Usually all but highlighted. Let's fetch all.
-        // Actually, the API might filter. Let's remove {unread: true} to get list, or handle based on backend.
-        // Instructions said: GET /api/notifications/?unread=true. But dropdown usually shows history too.
-        // Let's stick to fetch params if passed. Let's try fetching all recent.
-        // queryFn: () => getNotifications(), 
+        queryFn: () => getNotifications({ unread: true }),
         refetchInterval: 30000, // Poll every 30s
     });
 
-    const unreadCount = notifications.filter((n: any) => !n.is_read).length;
+    const unreadCount = notifications.filter((n: Notification) => !n.is_read).length;
 
     const readMutation = useMutation({
         mutationFn: markNotificationAsRead,
@@ -84,7 +88,7 @@ export const NotificationBell = () => {
                     ) : notifications.length === 0 ? (
                         <div className="p-4 text-center text-sm text-muted-foreground">No notifications</div>
                     ) : (
-                        notifications.map((notification: any) => (
+                        notifications.map((notification: Notification) => (
                             <DropdownMenuItem key={notification.id} className={cn("flex flex-col items-start gap-1 p-3 cursor-pointer", !notification.is_read && "bg-muted/50")}>
                                 <div className="flex w-full justify-between items-start gap-2">
                                     <span className={cn("text-sm font-medium", !notification.is_read && "text-foreground")}>

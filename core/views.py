@@ -17,7 +17,7 @@ from django.utils.dateparse import parse_date, parse_datetime
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 
 from .models import (
     Resident, MaintenanceRequest, Payment, Amenity, AmenityBooking,
@@ -558,32 +558,60 @@ class CreatePaymentIntentView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+def send_receipt_email(payment):
+    # This is a placeholder. In a real application, you would use a transactional email service.
+    print(f"Sending receipt for payment {payment.id} to {payment.resident.user.email}")
+
 class StripeWebhookView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         payload = request.body
         sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
         endpoint_secret = os.environ.get('STRIPE_WEBHOOK_SECRET')
 
         if not endpoint_secret:
-             return Response({"error": "Webhook secret not configured"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            return Response({"error": "Webhook secret not configured"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         try:
             event = stripe.Webhook.construct_event(
                 payload, sig_header, endpoint_secret
             )
         except ValueError as e:
+            # Invalid payload
             return Response(status=400)
         except stripe.error.SignatureVerificationError as e:
+            # Invalid signature
             return Response(status=400)
 
+        # Handle the event
         if event['type'] == 'payment_intent.succeeded':
             payment_intent = event['data']['object']
-            # logic to record payment would go here
-            # user_id = payment_intent['metadata'].get('user_id')
-            pass
+            user_id = payment_intent['metadata'].get('user_id')
+            User = get_user_model()
+            try:
+                user = User.objects.get(id=user_id)
+                resident = get_object_or_404(Resident, user=user)
+                
+                payment = Payment.objects.create(
+                    resident=resident,
+                    amount=payment_intent['amount'] / 100.0,
+                    date=timezone.now(),
+                    payment_method='stripe',
+                    status='completed',
+                    transaction_id=payment_intent['id']
+                )
+                send_receipt_email(payment)
+
+            except User.DoesNotExist:
+                print(f"User with ID {user_id} not found.")
+            except Resident.DoesNotExist:
+                print(f"Resident for user with ID {user_id} not found.")
+            except Exception as e:
+                print(f"Error processing payment: {e}")
+        else:
+            print('Unhandled event type {}'.format(event['type']))
 
         return Response(status=200)
 

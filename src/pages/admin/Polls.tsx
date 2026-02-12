@@ -15,6 +15,7 @@ import { getPolls, createPoll } from "@/utils/api";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 const Polls = () => {
     const { toast } = useToast();
@@ -47,21 +48,9 @@ const Polls = () => {
             toast({ title: "Validation Error", description: "Please fill all fields.", variant: "destructive" });
             return;
         }
-        // Backend expects options as a list of objects or something?
-        // Wait, PollSerializer expects 'options'?
-        // My PollSerializer: options = PollOptionSerializer(many=True, read_only=True)
-        // This means creating poll with options might need nested write, OR logic in view.
-        // My ModelViewSet for Polls doesn't explicitly handle nested creation unless I implemented it or DRF does it (DRF doesn't do writable nested by default).
-        // I might need to update the backend ViewSet or Serializer to support writable nested options.
-        // Assuming I'll fix backend if it fails. For now, sending expected structure.
-
-        // Actually, let's assume I need to implement create properly on backend or send data that backend accepts.
-        // I'll send: { question, options: [{text: "opt1"}, ...] }
-        // I need to update serializer to be writable nested.
-
         createMutation.mutate({
             question: newPollQuestion,
-            options_data: newPollOptions.map(text => ({ text })), // Custom field name to handle in perform_create?
+            options: newPollOptions.map(text => ({ text })), 
         });
     };
 
@@ -70,6 +59,15 @@ const Polls = () => {
         const newOptions = [...newPollOptions];
         newOptions[index] = value;
         setNewPollOptions(newOptions);
+    };
+    
+    const getChartData = (options: any[]) => {
+        const totalVotes = options.reduce((sum, opt) => sum + (opt.vote_count || 0), 0);
+        return options.map(opt => ({
+            name: opt.text,
+            votes: opt.vote_count || 0,
+            percentage: totalVotes === 0 ? 0 : Math.round(((opt.vote_count || 0) / totalVotes) * 100)
+        }));
     };
 
     return (
@@ -122,14 +120,19 @@ const Polls = () => {
                                 <CardTitle className="text-lg">{poll.question}</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <ul className="space-y-2">
-                                    {poll.options?.map((opt: any) => (
-                                        <li key={opt.id} className="flex justify-between text-sm">
-                                            <span>{opt.text}</span>
-                                            {/* Show votes count if available */}
-                                        </li>
-                                    ))}
-                                </ul>
+                                <div className="h-[200px] w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={getChartData(poll.options)} layout="vertical">
+                                            <XAxis type="number" hide />
+                                            <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 12 }} />
+                                            <Tooltip cursor={{ fill: 'transparent' }} />
+                                            <Bar dataKey="votes" fill="#8884d8" />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                                <p className="text-center text-xs text-muted-foreground mt-2">
+                                    Total Votes: {poll.options.reduce((acc: number, curr: any) => acc + (curr.vote_count || 0), 0)}
+                                </p>
                             </CardContent>
                         </Card>
                     ))}

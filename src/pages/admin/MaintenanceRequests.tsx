@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Search, AlertCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { formatToUserTimezone } from "@/utils/date";
 
 const MaintenanceRequests = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -63,7 +64,7 @@ const MaintenanceRequests = () => {
     updateMutation.mutate({ id, status });
   };
 
-  const filteredRequests = requests?.filter(request =>
+  const filteredRequests = requests?.results.filter(request =>
     request.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     request.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -136,9 +137,12 @@ const MaintenanceRequests = () => {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="new">New</SelectItem>
+                              <SelectItem value="in_review">In Review</SelectItem>
+                              <SelectItem value="assigned">Assigned</SelectItem>
                               <SelectItem value="in_progress">In Progress</SelectItem>
                               <SelectItem value="completed">Completed</SelectItem>
+                              <SelectItem value="closed">Closed</SelectItem>
                             </SelectContent>
                           </Select>
                         </TableCell>
@@ -154,7 +158,7 @@ const MaintenanceRequests = () => {
                           </span>
                         </TableCell>
                         <TableCell>{request.resident_name}</TableCell>
-                        <TableCell>{new Date(request.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell>{formatToUserTimezone(request.created_at)}</TableCell>
                       </TableRow>
                     ))
                   )}

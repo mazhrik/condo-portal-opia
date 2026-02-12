@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAnnouncements, createAnnouncement } from "@/utils/api";
-import { format } from "date-fns";
+import { formatToUserTimezone } from "@/utils/date";
 import { Loader2 } from "lucide-react";
 
 const Announcements = () => {
@@ -91,10 +91,10 @@ const Announcements = () => {
                     </div>
                   ) : error ? (
                     <p className="text-destructive">Failed to load announcements</p>
-                  ) : announcements?.length === 0 ? (
+                  ) : announcements?.results.length === 0 ? (
                     <p className="text-muted-foreground">No announcements yet</p>
                   ) : (
-                    announcements?.map((announcement: any) => (
+                    announcements?.results.map((announcement: any) => (
                       <div
                         key={announcement.id}
                         className="p-4 rounded-lg bg-background/50 border border-primary/10"
@@ -104,7 +104,7 @@ const Announcements = () => {
                           {announcement.content}
                         </p>
                         <p className="text-xs text-muted-foreground mt-2">
-                          Posted on {format(new Date(announcement.created_at), 'PPP')}
+                          Posted on {formatToUserTimezone(announcement.created_at)}
                         </p>
                       </div>
                     ))

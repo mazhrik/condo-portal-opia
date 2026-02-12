@@ -1,98 +1,53 @@
-import { Link } from "react-router-dom";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
-import {
-  LayoutDashboard,
-  Bell,
-  Calendar,
-  Building,
-  CreditCard,
-  MessageSquare,
-  Car,
-  Users,
-  FileText,
-  Box,
-  Vote,
-  ShieldAlert,
-  CalendarDays,
-  Hammer,
-  Ban,
-} from "lucide-react";
 
-const menuItems = [
-  {
-    title: "Dashboard",
-    url: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Announcements",
-    url: "/announcements",
-    icon: Bell,
-  },
-  {
-    title: "Maintenance",
-    url: "/maintenance",
-    icon: Building,
-  },
-  {
-    title: "ARC Requests",
-    url: "/resident/arc",
-    icon: Hammer,
-  },
-  {
-    title: "My Violations",
-    url: "/resident/violations",
-    icon: Ban,
-  },
-  {
-    title: "Amenity Bookings",
-    url: "/resident/amenities",
-    icon: Calendar,
-  },
-  {
-    title: "Polls",
-    url: "/resident/polls",
-    icon: Vote,
-  },
-  {
-    title: "Events",
-    url: "/resident/events",
-    icon: CalendarDays,
-  },
-];
+import { NavLink } from "react-router-dom";
+import { Home, Bell, Wrench, Building, Users, FileText, Vote } from "lucide-react";
 
-export function ResidentSidebar() {
-  return (
-    <Sidebar>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Resident Portal</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link to={item.url} className="flex items-center gap-2">
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-    </Sidebar>
-  );
-}
+export const ResidentSidebar = () => (
+    <div className="flex h-full max-h-screen flex-col gap-2">
+        <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+            <NavLink to="/dashboard" className="flex items-center gap-2 font-semibold">
+                <Home className="h-6 w-6" />
+                <span>Resident Portal</span>
+            </NavLink>
+        </div>
+        <div className="flex-1">
+            <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+                <NavLink to="/dashboard" end className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${isActive ? 'bg-muted text-primary' : ''}`}>
+                    <Home className="h-4 w-4" />
+                    Dashboard
+                </NavLink>
+                <NavLink to="/announcements" className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${isActive ? 'bg-muted text-primary' : ''}`}>
+                    <Bell className="h-4 w-4" />
+                    Announcements
+                </NavLink>
+                <NavLink to="/maintenance" className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${isActive ? 'bg-muted text-primary' : ''}`}>
+                    <Wrench className="h-4 w-4" />
+                    Maintenance
+                </NavLink>
+                <NavLink to="/resident/amenities" className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${isActive ? 'bg-muted text-primary' : ''}`}>
+                    <Building className="h-4 w-4" />
+                    Amenities
+                </NavLink>
+                <NavLink to="/resident/arc" className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${isActive ? 'bg-muted text-primary' : ''}`}>
+                    <FileText className="h-4 w-4" />
+                    ARC Requests
+                </NavLink>
+                <NavLink to="/resident/violations" className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${isActive ? 'bg-muted text-primary' : ''}`}>
+                    <Users className="h-4 w-4" />
+                    My Violations
+                </NavLink>
+                 <NavLink to="/resident/polls" className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${isActive ? 'bg-muted text-primary' : ''}`}>
+                    <Vote className="h-4 w-4" />
+                    Polls
+                </NavLink>
+            </nav>
+        </div>
+    </div>
+);

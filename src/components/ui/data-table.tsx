@@ -9,18 +9,18 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface DataTableProps {
+interface DataTableProps<T> {
   columns: {
-    accessorKey?: string;
+    accessorKey?: keyof T;
     header: string;
     id?: string;
-    cell?: (props: any) => React.ReactNode;
+    cell?: (props: { row: T }) => React.ReactNode;
   }[];
-  data: any[];
+  data: T[];
   isLoading?: boolean;
 }
 
-export function DataTable({ columns, data, isLoading }: DataTableProps) {
+export function DataTable<T>({ columns, data, isLoading }: DataTableProps<T>) {
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -36,8 +36,8 @@ export function DataTable({ columns, data, isLoading }: DataTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            {columns.map((column) => (
-              <TableHead key={column.accessorKey || column.id}>
+            {columns.map((column, index) => (
+              <TableHead key={column.id || index.toString()}>
                 {column.header}
               </TableHead>
             ))}
@@ -46,12 +46,12 @@ export function DataTable({ columns, data, isLoading }: DataTableProps) {
         <TableBody>
           {data.map((row, rowIndex) => (
             <TableRow key={rowIndex}>
-              {columns.map((column) => (
-                <TableCell key={column.accessorKey || column.id}>
+              {columns.map((column, colIndex) => (
+                <TableCell key={column.id || colIndex.toString()}>
                   {column.cell
                     ? column.cell({ row })
                     : column.accessorKey
-                    ? row[column.accessorKey]
+                    ? (row[column.accessorKey] as React.ReactNode)
                     : null}
                 </TableCell>
               ))}

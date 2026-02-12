@@ -7,9 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Ban, AlertCircle, CheckCircle, DollarSign, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-// Note: Stripe integration would go here similar to Payments.tsx if we want immediate payment.
-// For now, I'll simulate payment or link to Payments page.
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
 
 const MyViolations = () => {
     const { toast } = useToast();
@@ -78,11 +83,27 @@ const MyViolations = () => {
                                 </CardContent>
                                 <CardFooter className="flex justify-end gap-2 bg-muted/20 p-4">
                                     {v.status === 'open' && v.fine_amount > 0 && (
-                                        <Button variant="default">
+                                        <Button variant="default" onClick={() => toast({ title: "Coming Soon!", description: "Online fine payment will be available soon." })}>
                                             <DollarSign className="w-4 h-4 mr-2" /> Pay Fine
                                         </Button>
                                     )}
-                                    <Button variant="outline">Appeal</Button>
+                                    <Dialog>
+                                        <DialogTrigger asChild>
+                                            <Button variant="outline">Appeal</Button>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                            <DialogHeader>
+                                                <DialogTitle>Appeal Violation</DialogTitle>
+                                                <DialogDescription>Submit an appeal for this violation. Please provide a detailed explanation.</DialogDescription>
+                                            </DialogHeader>
+                                            <div className="mt-4">
+                                                <textarea className="w-full h-32 p-2 border rounded-md" placeholder="Your reason for appealing..."></textarea>
+                                            </div>
+                                            <DialogFooter>
+                                                <Button variant="outline" onClick={() => toast({ title: "Coming Soon!", description: "The appeals process will be available soon." })}>Submit Appeal</Button>
+                                            </DialogFooter>
+                                        </DialogContent>
+                                    </Dialog>
                                 </CardFooter>
                             </Card>
                         ))

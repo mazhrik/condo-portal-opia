@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ResidentLayout } from "@/components/resident/ResidentLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,18 +7,18 @@ import { Label } from "@/components/ui/label";
 import { Loader2, CreditCard, CheckCircle } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { useMutation } from "@tanstack/react-query";
-import { createPaymentIntent } from "@/utils/api";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createPaymentIntent, getPayments } from "@/utils/api";
 import { useToast } from "@/hooks/use-toast";
+import { formatToUserTimezone } from "@/utils/date";
 
-// Replace with your actual publishable key
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "pk_test_placeholder");
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "pk_test_... ");
 
-const CheckoutForm = () => {
+const CheckoutForm = ({ onPaymentSuccess }: { onPaymentSuccess: () => void }) => {
   const stripe = useStripe();
   const elements = useElements();
   const { toast } = useToast();
-  const [amount, setAmount] = useState<string>("100.00");
+  const [amount, setAmount] = useState<string>("250.00");
   const [isProcessing, setIsProcessing] = useState(false);
 
   const payMutation = useMutation({
@@ -40,15 +40,11 @@ const CheckoutForm = () => {
 
     setIsProcessing(true);
 
-    const amountInCents = Math.round(parseFloat(amount) * 100);
-
-    // 1. Create Intent
-    payMutation.mutate(amountInCents, {
+    payMutation.mutate({ amount: parseFloat(amount) }, {
       onSuccess: async (data: any) => {
-        const { client_secret } = data;
+        const { clientSecret } = data;
 
-        // 2. Confirm Payment
-        const result = await stripe.confirmCardPayment(client_secret, {
+        const result = await stripe.confirmCardPayment(clientSecret, {
           payment_method: {
             card: elements.getElement(CardElement)!,
           }
@@ -68,7 +64,7 @@ const CheckoutForm = () => {
               title: "Payment Successful",
               description: `Successfully paid $${amount}`,
             });
-            // Optional: Call functionality to save payment record in backend if not handled by webhook
+            onPaymentSuccess();
           }
         }
       }
@@ -114,6 +110,8 @@ const CheckoutForm = () => {
 };
 
 const Payments = () => {
+  const { data: payments, isLoading, refetch } = useQuery({ queryKey: ["payments"], queryFn: getPayments });
+
   return (
     <ResidentLayout>
       <div className="p-8 relative">
@@ -132,7 +130,7 @@ const Payments = () => {
             </CardHeader>
             <CardContent>
               <Elements stripe={stripePromise}>
-                <CheckoutForm />
+                <CheckoutForm onPaymentSuccess={refetch} />
               </Elements>
             </CardContent>
           </Card>
@@ -143,9 +141,25 @@ const Payments = () => {
               <CardDescription>Recent transactions</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-sm text-muted-foreground text-center py-8">
-                No recent payments found.
-              </div>
+              {isLoading ? (
+                <div className="text-sm text-muted-foreground text-center py-8">Loading payments...</div>
+              ) : (payments && payments.length > 0) ? (
+                <ul className="space-y-4">
+                  {payments.map((payment: any) => (
+                    <li key={payment.id} className="flex justify-between items-center">
+                      <div>
+                        <p className="font-semibold">${payment.amount}</p>
+                        <p className="text-sm text-muted-foreground">{formatToUserTimezone(payment.date)}</p>
+                      </div>
+                      <span className="text-sm text-green-500 flex items-center gap-1"><CheckCircle className="h-4 w-4" /> {payment.status}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="text-sm text-muted-foreground text-center py-8">
+                  No recent payments found.
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

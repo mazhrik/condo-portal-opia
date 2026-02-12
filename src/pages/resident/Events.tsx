@@ -10,6 +10,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { formatToUserTimezone } from "@/utils/date";
 
 const ResidentEvents = () => {
     const [view, setView] = useState<'list' | 'calendar'>('list');
@@ -96,9 +97,7 @@ const ResidentEvents = () => {
                                         <div className="space-y-1 mt-2">
                                             <CardDescription className="flex items-center text-sm">
                                                 <Clock className="h-3 w-3 mr-2 text-primary" />
-                                                {event.start_time ? new Date(event.start_time).toLocaleString(undefined, {
-                                                    weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
-                                                }) : 'N/A'}
+                                                {event.start_time ? formatToUserTimezone(event.start_time) : 'N/A'}
                                             </CardDescription>
                                             <CardDescription className="flex items-center text-sm">
                                                 <MapPin className="h-3 w-3 mr-2 text-primary" />

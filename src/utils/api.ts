@@ -101,9 +101,7 @@ const api = axios.create({
   baseURL,
 });
 
-const refreshClient = axios.create({
-  baseURL,
-});
+const refreshClient = axios.create();
 
 export const refreshAccessToken = async () => {
   const refreshToken = getRefreshToken();
@@ -460,7 +458,7 @@ export const getNotifications = async (params?: { unread?: boolean }) => {
 };
 
 export const markNotificationAsRead = async (id: number) => {
-  const response = await api.patch(`/notifications/${id}/read/`);
+  const response = await api.post(`/notifications/${id}/mark_read/`);
   return response.data;
 };
 

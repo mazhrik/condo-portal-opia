@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from .models import (
     Resident, MaintenanceRequest, Payment, Amenity, AmenityBooking,
     ParkingSpot, VisitorParking, Document, ForumPost, ForumComment,
@@ -280,7 +281,14 @@ class EventSerializer(serializers.ModelSerializer):
         return f"{obj.created_by.user.first_name} {obj.created_by.user.last_name}"
 
 class NotificationSerializer(serializers.ModelSerializer):
+    title = serializers.SerializerMethodField()
+
     class Meta:
         model = Notification
-        fields = ['id', 'user', 'message', 'type', 'is_read', 'created_at', 'related_object_id']
-        read_only_fields = ['user', 'created_at']
+        fields = ('id', 'message', 'type', 'is_read', 'created_at', 'content_type', 'object_id', 'title')
+        read_only_fields = ('id', 'message', 'type', 'is_read', 'created_at', 'content_type', 'object_id', 'title')
+
+    def get_title(self, obj):
+        if hasattr(obj.content_object, 'title'):
+            return obj.content_object.title
+        return None

@@ -1,72 +1,43 @@
-import { Link } from "react-router-dom";
-import {
-    Sidebar,
-    SidebarContent,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-} from "@/components/ui/sidebar";
-import {
-    LayoutDashboard,
-    FileText,
-    DollarSign,
-    Vote,
-    Settings,
-} from "lucide-react";
 
-const menuItems = [
-    {
-        title: "Dashboard",
-        url: "/board",
-        icon: LayoutDashboard,
-    },
-    {
-        title: "ARC Reviews",
-        url: "/board/arc",
-        icon: FileText,
-    },
-    {
-        title: "Financial Reports",
-        url: "/board/financials",
-        icon: DollarSign,
-    },
-    {
-        title: "Board Polls",
-        url: "/board/polls",
-        icon: Vote,
-    },
-    {
-        title: "Settings",
-        url: "/board/settings",
-        icon: Settings,
-    },
-];
+import { NavLink } from "react-router-dom";
+import { Home, ClipboardList, Banknote, Vote, Settings } from "lucide-react";
 
-export function BoardSidebar() {
-    return (
-        <Sidebar>
-            <SidebarContent>
-                <SidebarGroup>
-                    <SidebarGroupLabel>Board Portal</SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            {menuItems.map((item) => (
-                                <SidebarMenuItem key={item.title}>
-                                    <SidebarMenuButton asChild>
-                                        <Link to={item.url} className="flex items-center gap-2">
-                                            <item.icon className="h-4 w-4" />
-                                            <span>{item.title}</span>
-                                        </Link>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            ))}
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
-            </SidebarContent>
-        </Sidebar>
-    );
-}
+export const BoardSidebar = () => (
+  <div className="flex h-full max-h-screen flex-col gap-2">
+    <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+      <NavLink to="/board" className="flex items-center gap-2 font-semibold">
+        <Home className="h-6 w-6" />
+        <span>Board Portal</span>
+      </NavLink>
+    </div>
+    <div className="flex-1">
+      <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+        <NavLink to="/board" end className={({ isActive }) => 
+            `flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${isActive ? 'bg-muted text-primary' : ''}`}>
+          <Home className="h-4 w-4" />
+          Dashboard
+        </NavLink>
+        <NavLink to="/board/arc" className={({ isActive }) => 
+            `flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${isActive ? 'bg-muted text-primary' : ''}`}>
+          <ClipboardList className="h-4 w-4" />
+          Architectural Reviews
+        </NavLink>
+        <NavLink to="/board/financials" className={({ isActive }) => 
+            `flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${isActive ? 'bg-muted text-primary' : ''}`}>
+          <Banknote className="h-4 w-4" />
+          Financial Reports
+        </NavLink>
+        <NavLink to="/board/polls" className={({ isActive }) => 
+            `flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${isActive ? 'bg-muted text-primary' : ''}`}>
+          <Vote className="h-4 w-4" />
+          Polls
+        </NavLink>
+        <NavLink to="/board/settings" className={({ isActive }) => 
+            `flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${isActive ? 'bg-muted text-primary' : ''}`}>
+          <Settings className="h-4 w-4" />
+          Settings
+        </NavLink>
+      </nav>
+    </div>
+  </div>
+);

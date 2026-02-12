@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { ResidentSidebar } from "@/components/resident/ResidentSidebar";
 import { Vote, Loader2, CheckCircle, BarChart2 } from "lucide-react";
 import {
@@ -37,19 +37,14 @@ const ResidentPolls = () => {
             setVotedPolls(prev => ({ ...prev, [variables.pollId]: true }));
             queryClient.invalidateQueries({ queryKey: ['polls'] });
         },
-        onError: (error: any) => {
-            // If already voted, show results anyway
+        onError: (error: any, variables) => {
             if (error.response?.status === 400 && error.response?.data?.detail?.includes("already voted")) {
                 toast({
                     title: "Already Voted",
                     description: "You have already cast your vote for this poll.",
                     variant: "default"
                 });
-                // Mark as voted to show results
-                const pollIdStr = error.config?.url?.split('/')[2];
-                if (pollIdStr) {
-                    setVotedPolls(prev => ({ ...prev, [parseInt(pollIdStr)]: true }));
-                }
+                setVotedPolls(prev => ({ ...prev, [variables.pollId]: true }));
             } else {
                 toast({
                     title: "Error",
@@ -69,15 +64,14 @@ const ResidentPolls = () => {
         voteMutation.mutate({ pollId, optionId });
     };
 
-    // Calculate percentages for results
-    const getChartData = (options: any[]) => {
+    const getChartData = useCallback((options: any[]) => {
         const totalVotes = options.reduce((sum, opt) => sum + (opt.vote_count || 0), 0);
         return options.map(opt => ({
             name: opt.text,
             votes: opt.vote_count || 0,
             percentage: totalVotes === 0 ? 0 : Math.round(((opt.vote_count || 0) / totalVotes) * 100)
         }));
-    };
+    }, []);
 
     return (
         <ResidentLayout>
@@ -95,7 +89,7 @@ const ResidentPolls = () => {
                     ) : polls?.length === 0 ? (
                         <div className="col-span-2 text-center text-muted-foreground">No active polls at the moment.</div>
                     ) : (polls?.map((poll: any) => {
-                        const hasVoted = votedPolls[poll.id] || poll.user_voted; // Assuming backend might return user_voted
+                        const hasVoted = votedPolls[poll.id] || poll.user_voted;
 
                         return (
                             <Card key={poll.id} className={hasVoted ? "bg-muted/20" : ""}>

@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 class Resident(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -28,12 +30,12 @@ class Announcement(models.Model):
 
 class MaintenanceRequest(models.Model):
     STATUS_CHOICES = [
-        ('new', 'New'),
-        ('in_review', 'In Review'),
-        ('assigned', 'Assigned'),
-        ('in_progress', 'In Progress'),
-        ('completed', 'Completed'),
-        ('closed', 'Closed'),
+        ('New', 'New'),
+        ('In Review', 'In Review'),
+        ('Assigned', 'Assigned'),
+        ('In Progress', 'In Progress'),
+        ('Completed', 'Completed'),
+        ('Closed', 'Closed'),
     ]
     
     PRIORITY_CHOICES = [
@@ -45,7 +47,7 @@ class MaintenanceRequest(models.Model):
     resident = models.ForeignKey('Resident', on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     description = models.TextField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new', db_index=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='New', db_index=True)
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -260,7 +262,9 @@ class Notification(models.Model):
     type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES, default='general')
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    related_object_id = models.IntegerField(null=True, blank=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
     
     class Meta:
         ordering = ['-created_at']

@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { formatToUserTimezone } from "@/utils/date";
 
 const Events = () => {
     const { toast } = useToast();
@@ -38,10 +39,7 @@ const Events = () => {
     });
 
     const createMutation = useMutation({
-        mutationFn: (data: any) => createEvent({
-            ...data,
-            created_by: 1 // Need staff ID logic or backend handles it
-        }),
+        mutationFn: (data: any) => createEvent(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['events'] });
             setIsDialogOpen(false);
@@ -153,7 +151,7 @@ const Events = () => {
                                     </div>
                                     <CardDescription className="flex items-center mt-2">
                                         <Clock className="h-3 w-3 mr-1" />
-                                        {event.start_time ? new Date(event.start_time).toLocaleString() : 'N/A'}
+                                        {event.start_time ? formatToUserTimezone(event.start_time) : 'N/A'}
                                     </CardDescription>
                                     <CardDescription className="flex items-center">
                                         <MapPin className="h-3 w-3 mr-1" />
