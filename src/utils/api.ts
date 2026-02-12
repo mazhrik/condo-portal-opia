@@ -503,6 +503,11 @@ export const getMyViolations = async () => {
   return response.data;
 };
 
+export const updateViolationStatus = async (id: number, status: string) => {
+  const response = await api.patch(`/violations/${id}/`, { status });
+  return response.data;
+};
+
 // Board endpoints
 export const getFinancialSummary = async () => {
   const response = await api.get('/board/financial-summary/');

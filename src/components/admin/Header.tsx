@@ -1,5 +1,5 @@
 
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, BarChart, Users, Bell, Home, FileText, Settings, Wrench, Building, Vote, ClipboardList, Banknote } from "lucide-react";
@@ -30,7 +30,7 @@ export const Header = () => {
             <NavLink to="/admin/announcements" className="text-muted-foreground hover:text-foreground">
               Announcements
             </NavLink>
-            <NavLink to="/admin/maintenance-requests" className="text-muted-foreground hover:text-foreground">
+            <NavLink to="/admin/maintenance" className="text-muted-foreground hover:text-foreground">
               Maintenance
             </NavLink>
             <NavLink to="/admin/documents" className="text-muted-foreground hover:text-foreground">
@@ -127,3 +127,4 @@ export const Header = () => {
     </header>
   );
 };
+export default Header;
