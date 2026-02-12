@@ -22,6 +22,18 @@ class ResidentSerializer(serializers.ModelSerializer):
         model = Resident
         fields = '__all__'
 
+class ResidentCreateSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+
+    class Meta:
+        model = Resident
+        fields = ('user', 'phone_number', 'unit_number', 'move_in_date')
+
+    def create(self, validated_data):
+        user_data = validated_data.pop('user')
+        user = User.objects.create_user(**user_data)
+        resident = Resident.objects.create(user=user, **validated_data)
+        return resident
 
 class ResidentProfileSerializer(serializers.ModelSerializer):
     class Meta:

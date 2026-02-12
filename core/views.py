@@ -35,7 +35,7 @@ from .serializers import (
     PollOptionSerializer, PollVoteSerializer, IncidentReportSerializer,
     EventSerializer, ResidentProfileSerializer, StaffProfileSerializer,
     MaintenanceRequestUpdateSerializer, NotificationSerializer,
-    ArchitecturalRequestSerializer, ViolationSerializer
+    ArchitecturalRequestSerializer, ViolationSerializer, ResidentCreateSerializer
 )
 from .permissions import IsAdminOrManager, IsResident, IsStaffUser, IsResidentOrStaff, IsBoardMember
 from .pagination import AnnouncementPagination, MaintenanceRequestPagination, GenericPagination
@@ -47,6 +47,11 @@ class ResidentViewSet(viewsets.ModelViewSet):
     serializer_class = ResidentSerializer
     permission_classes = [IsAuthenticated, IsAdminOrManager]
     pagination_class = GenericPagination
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return ResidentCreateSerializer
+        return ResidentSerializer
 
 class AnnouncementViewSet(viewsets.ModelViewSet):
     serializer_class = AnnouncementSerializer
@@ -591,7 +596,7 @@ class StripeWebhookView(APIView):
             user_id = payment_intent['metadata'].get('user_id')
             User = get_user_model()
             try:
-                user = User.objects.get(id=user_id)
+                user = User.objects.get(id=.venv/bin/activate && python3 manage.py makemigrations && python3 manage.py migrateuser_id)
                 resident = get_object_or_404(Resident, user=user)
                 
                 payment = Payment.objects.create(

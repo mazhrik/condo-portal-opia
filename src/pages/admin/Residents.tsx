@@ -19,7 +19,7 @@ const Residents = () => {
     queryFn: getResidents
   });
 
-  const filteredResidents = residents?.filter(resident =>
+  const filteredResidents = residents?.results?.filter(resident =>
     resident.user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     resident.user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     resident.unit_number.toLowerCase().includes(searchTerm.toLowerCase())
@@ -67,7 +67,7 @@ const Residents = () => {
               </div>
             </div>
             <ResidentTable 
-              residents={residents || []}
+              residents={residents?.results || []}
               isLoading={isLoading}
               filteredResidents={filteredResidents}
             />
