@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Header from "@/components/admin/Header";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -22,7 +23,7 @@ const AdminArchitecturalRequests = () => {
     });
 
     const updateMutation = useMutation({
-        mutationFn: updateArchitecturalRequestStatus,
+        mutationFn: ({ id, status, comment }: { id: number; status: string; comment?: string; }) => updateArchitecturalRequestStatus(id, status, comment),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['arc-requests'] });
             toast({ title: "Success", description: "Request updated successfully." });
@@ -33,7 +34,7 @@ const AdminArchitecturalRequests = () => {
     });
 
     const handleUpdate = (id: number, status: string, board_comment: string) => {
-        updateMutation.mutate({ id, status, board_comment });
+        updateMutation.mutate({ id, status, comment: board_comment });
     };
     
     const getStatusBadge = (status: string) => {
